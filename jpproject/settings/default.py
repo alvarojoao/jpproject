@@ -53,20 +53,20 @@ WSGI_APPLICATION = 'jpproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-#         #'ENGINE': 'django.db.backends.{{ db_engine }}',
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': '{{ db_name }}',
-#         # The rest is not used with sqlite3:
-#         'USER': '{{ db_user }}',
-#         'PASSWORD': '{{ db_p@ssword }}',
-#         'CONN_MAX_AGE': 60,
-#         'HOST': 'localhost',
-#         'PORT': '',
-#     }
-# }
+DATABASES = {
+    'default': {
+        # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        #'ENGINE': 'django.db.backends.{{ db_engine }}',
+        # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        # 'NAME': '{{ db_name }}',
+        # # The rest is not used with sqlite3:
+        # 'USER': '{{ db_user }}',
+        # 'PASSWORD': '{{ db_p@ssword }}',
+        # 'CONN_MAX_AGE': 60,
+        # 'HOST': 'localhost',
+        # 'PORT': '',
+    }
+}
 
 DATABASES['default'] =  dj_database_url.config()
 
