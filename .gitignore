@@ -6,7 +6,7 @@ local.py
 # ./manage.py collectstatic folder
 static-collected/*
 
-
+ENV/
 # Packages
 *.egg
 *.egg-info

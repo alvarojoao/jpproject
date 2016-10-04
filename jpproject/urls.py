@@ -16,12 +16,15 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
-from projectname.home.views import HomeView
+from jpproject.home.views import HomeView
+from django.conf.urls.i18n import i18n_patterns
 
 admin.autodiscover()
 
 urlpatterns = [
     # Homepage
     url(r'^$', HomeView.as_view(), name='home'),
-    url(r'^admin/', include(admin.site.urls)),
 ]
+urlpatterns += i18n_patterns(
+    url(r'^admin/', include(admin.site.urls)),
+)
