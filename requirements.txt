@@ -7,3 +7,4 @@ psycopg2==2.6.1
 six==1.9.0
 sqlparse==0.1.15
 wsgiref==0.1.2
+gunicorn==19.6.0
