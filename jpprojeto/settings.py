@@ -29,6 +29,10 @@ DEBUG = True
 # Application definition
 
 INSTALLED_APPS = [
+    'admin_tools',
+    'admin_tools.theming',
+    'admin_tools.menu',
+    'admin_tools.dashboard',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,10 +43,34 @@ INSTALLED_APPS = [
     # http://whitenoise.evans.io/en/stable/django.html#using-whitenoise-in-development
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    
     'polls.apps.PollsConfig',
-
+    'abastecimento.apps.AbastecimentoConfig',
+    'django_nvd3',
+    'djangobower',
+    'admin_tools_stats',
 ]
+# Django-bower
+# ------------
+
+# Specifie path to components root (you need to use absolute path)
+BOWER_COMPONENTS_ROOT = os.path.join(PROJECT_ROOT, 'components')
+
+#BOWER_PATH = '/usr/local/bin/bower'
+
+BOWER_INSTALLED_APPS = (
+    'jquery#2.0.3',
+    'jquery-ui#~1.10.3',
+    'd3#3.3.6',
+    'nvd3#1.1.12-beta',
+)
+
+
+#DJANGO-ADMIN-TOOL
+#=================
+ADMIN_TOOLS_MENU = 'menu.CustomMenu'
+ADMIN_TOOLS_INDEX_DASHBOARD = 'dashboard.CustomIndexDashboard'
+ADMIN_TOOLS_APP_INDEX_DASHBOARD = 'dashboard.CustomAppIndexDashboard'
+ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
@@ -57,23 +85,33 @@ MIDDLEWARE_CLASSES = [
 ]
 
 ROOT_URLCONF = 'jpprojeto.urls'
+APPLICATION_DIR = os.path.dirname(globals()['__file__'])
 
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-            'debug': DEBUG,
-        },
+TEMPLATES = [{
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'DIRS': [os.path.join(APPLICATION_DIR, 'templates')],
+    'OPTIONS': {
+        'debug': DEBUG,
+        'loaders': [
+            ('django.template.loaders.cached.Loader', [
+                'admin_tools.template_loaders.Loader',
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+                'django.template.loaders.eggs.Loader',
+            ]),
+        ],
+        'context_processors': [
+            "django.contrib.auth.context_processors.auth",
+            "django.template.context_processors.debug",
+            "django.template.context_processors.i18n",
+            "django.template.context_processors.media",
+            "django.template.context_processors.static",
+            "django.template.context_processors.csrf",
+            "django.template.context_processors.tz",
+            "django.template.context_processors.request",
+        ]
     },
-]
+}]
 
 WSGI_APPLICATION = 'jpprojeto.wsgi.application'
 
@@ -132,6 +170,14 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(PROJECT_ROOT, 'static'),
 ]
+# List of finder classes that know how to find static files in
+# various locations.
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    'djangobower.finders.BowerFinder',
+)
 
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/

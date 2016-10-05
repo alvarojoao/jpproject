@@ -10,3 +10,7 @@ ipython==3.2.0
 six==1.9.0
 sqlparse==0.1.15
 wsgiref==0.1.2
+bootstrap_admin==0.3.7.1
+django-admin-tools==0.8.0
+django-admin-tools-stats==0.7.1
+
