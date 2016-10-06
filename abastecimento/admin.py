@@ -2,9 +2,16 @@ from django.contrib import admin
 
 # Register your models here.
 
-from abastecimento.models import Abastecimento,Posto,Veiculo,Vale
+from abastecimento.models import Abastecimento,Posto,Veiculo,Vale,Usuario
 
 
+
+class UsuarioAdmin(admin.ModelAdmin):
+
+    search_fields = ['nome', 'cpf']
+
+
+admin.site.register(Usuario, UsuarioAdmin)
 
 class AbastecimentoAdmin(admin.ModelAdmin):
 
