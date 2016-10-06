@@ -14,10 +14,15 @@ class UsuarioAdmin(admin.ModelAdmin):
 admin.site.register(Usuario, UsuarioAdmin)
 
 class AbastecimentoAdmin(admin.ModelAdmin):
-
-    search_fields = ['responsavel', 'veiculo', 'posto','observacao']
-    list_filter = ('criado_date','atualizado_date')
-
+	
+	list_display = ('notafiscal','hodometro','quantidade','valor_display','vale', 'responsavel','veiculo')
+	search_fields = ['notafiscal', 'responsavel', 'veiculo','posto','observacao']
+	list_filter = ('criado_date','veiculo')
+	# readonly_fields=('vale','motorista','responsavel','veiculo','posto')
+	def get_readonly_fields(self, request, obj=None):
+		if obj: # editing an existing object
+			return self.readonly_fields + ('vale','motorista','responsavel','veiculo','posto')
+		return self.readonly_fields
 
 admin.site.register(Abastecimento, AbastecimentoAdmin)
 
