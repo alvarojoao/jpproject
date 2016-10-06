@@ -5,6 +5,12 @@ from django.db.models.signals import post_save, post_delete, pre_save
 from django.db import models
 from django.utils import timezone
 
+class Usuario(models.Model):
+	nome = models.CharField(max_length=200)
+	cpf = models.CharField(max_length=20,blank=True, null=True)
+	def __str__(self):
+		return self.nome
+
 # Create your models here.
 class Posto(models.Model):
     nome = models.CharField(max_length=200)
@@ -19,8 +25,9 @@ class Posto(models.Model):
     def __str__(self):
         return self.nome
 
+
 class Veiculo(models.Model):
-	dono = models.ForeignKey('auth.User',blank=True, null=True)
+	dono = models.ForeignKey(Usuario,blank=True, null=True)
 	placa = models.CharField(max_length=7)
 	observacao = models.TextField()
 	TIPOS = (
@@ -52,7 +59,7 @@ class Vale(models.Model):
 		return str(self.numero)
 
 class Abastecimento(models.Model):
-	responsavel = models.ForeignKey('auth.User')
+	responsavel = models.ForeignKey(Usuario)
 	veiculo = models.ForeignKey(Veiculo)
 	posto = models.ForeignKey(Posto)
 	observacao = models.TextField()
@@ -83,7 +90,6 @@ class Abastecimento(models.Model):
 	def pre_save(sender, instance, **kwargs):
 		instance.vale.usado = True
 		instance.vale.save()
-		print "12"
 		#do anything you want
 pre_save.connect(Abastecimento.pre_save, Abastecimento, dispatch_uid="sightera.abastecimento.models.Abastecimento") 
 
