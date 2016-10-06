@@ -27,8 +27,9 @@ SECRET_KEY = "wertyuiol;lkjhgfdfghjk"
 DEBUG = True
 
 # Application definition
-
 INSTALLED_APPS = [
+    'dal',
+    'dal_select2',
     'admin_tools',
     'admin_tools.theming',
     'admin_tools.menu',
@@ -43,11 +44,11 @@ INSTALLED_APPS = [
     # http://whitenoise.evans.io/en/stable/django.html#using-whitenoise-in-development
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    'polls.apps.PollsConfig',
     'abastecimento.apps.AbastecimentoConfig',
     'django_nvd3',
     'djangobower',
     'admin_tools_stats',
+    'import_export'
 ]
 # Django-bower
 # ------------
