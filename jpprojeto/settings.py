@@ -30,10 +30,8 @@ DEBUG = True
 INSTALLED_APPS = [
     'dal',
     'dal_select2',
-    'admin_tools',
-    'admin_tools.theming',
-    'admin_tools.menu',
-    'admin_tools.dashboard',
+    'import_export',
+    'bootstrap_admin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -47,9 +45,8 @@ INSTALLED_APPS = [
     'abastecimento.apps.AbastecimentoConfig',
     'django_nvd3',
     'djangobower',
-    'admin_tools_stats',
-    'import_export'
 ]
+
 # Django-bower
 # ------------
 
