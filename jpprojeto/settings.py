@@ -8,9 +8,9 @@ https://docs.djangoproject.com/en/1.9/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
-
 import os
 import dj_database_url
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -22,10 +22,8 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "wertyuiol;lkjhgfdfghjk"
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 # Application definition
 INSTALLED_APPS = [
     'dal',
@@ -49,7 +47,6 @@ INSTALLED_APPS = [
 
 # Django-bower
 # ------------
-
 # Specifie path to components root (you need to use absolute path)
 BOWER_COMPONENTS_ROOT = os.path.join(PROJECT_ROOT, 'components')
 
