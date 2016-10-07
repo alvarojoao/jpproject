@@ -70,7 +70,7 @@ TIPO_VEICULOS = (
 	('TERCEIRO-COM', 'Terceirizados com desconto do combustível na medição'),
 )
 class Veiculo(models.Model):
-	placa = models.CharField(verbose_name="Placa/Codigo Interno",max_length=20,primary_key=True)
+	placa = models.CharField(verbose_name="Placa/Codigo Interno",max_length=30,primary_key=True)
 	
 	tipo = models.CharField(max_length=13, choices=TIPO_VEICULOS,blank=True, null=True)
 	observacao = models.TextField( blank=True, null=True)

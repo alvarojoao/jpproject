@@ -38,8 +38,9 @@ class AbastecimentoResource(resources.ModelResource):
 				val = float(row['valor'])
 			except Exception as err:
 				row['valor'] = 0
+			print row
 			row['id'] = unicode(row['id'])
-			codigo = unicode(row['vale']).strip()
+			codigo = row['vale']
 			obj, created = Vale.objects.update_or_create(codigo=codigo,usado=True)
 
 			placa = unicode(row['veiculo']).strip() 
