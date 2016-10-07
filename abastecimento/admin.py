@@ -73,7 +73,7 @@ class AbastecimentoAdmin(ImportExportMixin, admin.ModelAdmin):
 	# readonly_fields=('vale','motorista','responsavel','veiculo','posto')
 	def get_readonly_fields(self, request, obj=None):
 		if obj: # editing an existing object
-			return self.readonly_fields + ('motorista','responsavel','veiculo','posto')
+			return self.readonly_fields
 		return self.readonly_fields
 
 admin.site.register(Abastecimento, AbastecimentoAdmin)
