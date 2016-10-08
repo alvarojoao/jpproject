@@ -1,6 +1,5 @@
 from django.shortcuts import render
-from abastecimento.models import Abastecimento,Posto,Veiculo,Vale,Usuario
-
+from abastecimento.models import Abastecimento,Posto,Veiculo
 # Create your views here.
 
 def home(request):
