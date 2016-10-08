@@ -21,6 +21,6 @@ from abastecimento.views import home
 admin.autodiscover()
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    url(r'^/', admin.site.urls),
     # url(r'^admin_tools/', include('admin_tools.urls')),
 ]
