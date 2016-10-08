@@ -27,6 +27,8 @@ SECRET_KEY = "wertyuiol;lkjhgfdfghjk"
 DEBUG = False
 # Application definition
 INSTALLED_APPS = [
+    'dal',
+    'dal_select2',
     'import_export',
     'bootstrap_admin',
     'django.contrib.admin',
