@@ -99,8 +99,8 @@ class AbastecimentoAdmin(ImportExportMixin, admin.ModelAdmin):
 	resource_class = AbastecimentoResource
 	
 	list_display = ('id','notafiscal','hodometro','quantidade','valor_display','vale', 'responsavel_display','veiculo')
-	search_fields = ['notafiscal', 'responsavel', 'veiculo','posto','observacao']
-	list_filter = ('criado_date','veiculo')
+	search_fields = ['notafiscal', 'veiculo__placa','responsavel__username','posto__nome','observacao']
+	list_filter = ('criado_date','responsavel','veiculo')
 	# readonly_fields=('vale','motorista','responsavel','veiculo','posto')
 	def save_model(self, request, obj, form, change):
 		if not request.user.is_superuser:
@@ -144,7 +144,7 @@ admin.site.register(Posto, PostoAdmin)
 
 class VeiculoAdmin(admin.ModelAdmin):
 
-    search_fields = ['placa','dono']
+    search_fields = ['placa','tipo','observacao']
     list_filter = ('criado_date','atualizado_date','tipo')
 
 
