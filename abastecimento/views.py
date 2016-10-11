@@ -28,42 +28,48 @@ def home(request):
 
 	#placas
 	if len(placas)==0:
-		placas = [ i[0] for i in Abastecimento.objects.filter(hodometro__gte=0,criado_date__range=[start, new_end]).values_list('veiculo__placa').distinct()]
+		placas = [ i for (i,) in Abastecimento.objects.filter(hodometro__gte=0,criado_date__range=[start, new_end]).values_list('veiculo__placa').distinct()]
 
 	if len(placas)>0:
 		dates =  Abastecimento.objects.filter(veiculo__placa__in=placas,criado_date__range=[start, new_end]).order_by('criado_date').values_list('criado_date').distinct()
 		veiculos_data = {}
 		veiculos_consumption = {}
+		print placas
 		for pl in placas:
 			veiculos_data[pl] =   Abastecimento.objects.filter(veiculo__placa__in=placas,criado_date__range=[start, new_end]).order_by('criado_date').values('hodometro','criado_date','quantidade')
 			consumption = {}
+			consumption_datavalues = []
+			anterior_value = {}
 			for i,veiculo_data in enumerate(veiculos_data[pl]):
+				print veiculo_data
 				if i== 0:
-					# consumption.append(None)
-					pass
+					anterior_value = veiculo_data
 				else:
-					consumption[veiculo_data.criado_date.strftime("%Y/%m/%d")]=(abs(veiculo_data.hodometro-query[i-1].hodometro),veiculo_data.quantidade)
+					consumo_value = abs(veiculo_data['hodometro']-anterior_value['hodometro'])
+					consumption[veiculo_data['criado_date'].strftime("%Y/%m/%d")]=(consumo_value,veiculo_data['quantidade'])
+					consumption_datavalues.append(consumo_value)
+					anterior_value = veiculo_data
+				print consumption_datavalues
 			veiculos_consumption[pl] = consumption
 			
-			if len(consumption)>0:
-				std_value = pstdev(map(lambda (x,y,z):y,consumption))
+			if len(consumption_datavalues)>0:
+				std_value = pstdev(consumption_datavalues)
 			else:
 				std_value = 0
 				
-			with_std_value = False
-			if with_std_value:
-				consumption_data_data = [[data_criado,[dif,std_value]] for data_criado,dif,litros in consumption]
-			else:
-				consumption_data_data = [[data_criado,dif] for data_criado,dif,litros in consumption]
+			# with_std_value = False
+			# if with_std_value:
+			# 	consumption_data_data = [[data_criado,[dif,std_value]] for data_criado,dif,litros in consumption]
+			# else:
+			# 	consumption_data_data = [[data_criado,dif] for data_criado,dif,litros in consumption]
 
-		litros = [ litros_val for data_criado,dif,litros_val in consumption]
+		# litros = [ litros_val for data_criado,dif,litros_val in consumption]
 
 
 	# print query
 	consumption_data = {}
-	consumption_data['data'] = consumption_data_data
+	consumption_data['data'] = veiculos_consumption
 	consumption_data['labels'] = placas
-	consumption_data['litros'] = litros
 
 	data4 =		json.dumps(consumption_data)
 
