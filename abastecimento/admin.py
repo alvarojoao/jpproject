@@ -98,7 +98,7 @@ admin.site.register(Operador, OperadorAdmin)
 class AbastecimentoAdmin(ImportExportMixin, admin.ModelAdmin):
 	resource_class = AbastecimentoResource
 	
-	list_display = ('id','notafiscal','hodometro','quantidade','valor_display','vale', 'responsavel_display','veiculo')
+	list_display = ('id','criado_date','notafiscal','hodometro','quantidade','valor_display','vale', 'responsavel_display','veiculo')
 	search_fields = ['notafiscal', 'veiculo__placa','responsavel__username','posto__nome','observacao']
 	list_filter = ('criado_date','responsavel','veiculo')
 	# readonly_fields=('vale','motorista','responsavel','veiculo','posto')

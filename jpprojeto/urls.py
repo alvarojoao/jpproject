@@ -22,5 +22,7 @@ admin.autodiscover()
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^customgraph/', home)
+
     # url(r'^admin_tools/', include('admin_tools.urls')),
 ]
