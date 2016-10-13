@@ -20,7 +20,7 @@ def home(request):
 		placas = placas.split(',')
 	else:
 		placas = []
-	
+		
 	# data2 = serializers.serialize('json', some_data_to_dump)
 	start = date(2016, 01, 01)
 	end = datetime.today()
@@ -31,48 +31,60 @@ def home(request):
 		placas = [ i for (i,) in Abastecimento.objects.filter(hodometro__gte=0,criado_date__range=[start, new_end]).values_list('veiculo__placa').distinct()]
 
 	if len(placas)>0:
-		dates =  Abastecimento.objects.filter(veiculo__placa__in=placas,criado_date__range=[start, new_end]).order_by('criado_date').values_list('criado_date').distinct()
+		dates =  map(lambda (x,):x.strftime("%Y/%m/%d"),Abastecimento.objects.filter(veiculo__placa__in=placas,criado_date__range=[start, new_end]).order_by('criado_date').values_list('criado_date').distinct())
 		veiculos_data = {}
 		veiculos_consumption = {}
-		print placas
+		veiculos_litros = {}
+
 		for pl in placas:
-			veiculos_data[pl] =   Abastecimento.objects.filter(veiculo__placa__in=placas,criado_date__range=[start, new_end]).order_by('criado_date').values('hodometro','criado_date','quantidade')
+			veiculos_data[pl] =   Abastecimento.objects.filter(veiculo__placa=pl,criado_date__range=[start, new_end]).order_by('criado_date').values('hodometro','criado_date','quantidade')
 			consumption = {}
+			litros = {}
 			consumption_datavalues = []
 			anterior_value = {}
 			for i,veiculo_data in enumerate(veiculos_data[pl]):
-				print veiculo_data
 				if i== 0:
 					anterior_value = veiculo_data
 				else:
 					consumo_value = abs(veiculo_data['hodometro']-anterior_value['hodometro'])
-					consumption[veiculo_data['criado_date'].strftime("%Y/%m/%d")]=(consumo_value,veiculo_data['quantidade'])
+					consumption[veiculo_data['criado_date'].strftime("%Y/%m/%d")]=consumo_value
 					consumption_datavalues.append(consumo_value)
+					litros[veiculo_data['criado_date'].strftime("%Y/%m/%d")]=anterior_value['quantidade']
 					anterior_value = veiculo_data
-				print consumption_datavalues
 			veiculos_consumption[pl] = consumption
+			veiculos_litros[pl] = litros
 			
-			if len(consumption_datavalues)>0:
-				std_value = pstdev(consumption_datavalues)
-			else:
-				std_value = 0
-				
+
+			# if len(consumption_datavalues)>0:
+			# 	std_value = pstdev(consumption_datavalues)
+			# else:
+			# 	std_value = 0
 			# with_std_value = False
 			# if with_std_value:
 			# 	consumption_data_data = [[data_criado,[dif,std_value]] for data_criado,dif,litros in consumption]
 			# else:
 			# 	consumption_data_data = [[data_criado,dif] for data_criado,dif,litros in consumption]
 
-		# litros = [ litros_val for data_criado,dif,litros_val in consumption]
+		finalarray = []
+		for i,date_val in enumerate(dates):
+			finalarray.append([date_val])
+			for pl in placas:
+				finalarray[i].append(veiculos_consumption[pl].get(date_val,None))
 
 
 	# print query
 	consumption_data = {}
-	consumption_data['data'] = veiculos_consumption
+	consumption_data['data'] = finalarray
+	consumption_data['litros'] = veiculos_litros
 	consumption_data['labels'] = placas
 
 	data4 =		json.dumps(consumption_data)
 
+	return HttpResponse(data4, content_type='application/json')
+def labels_available(request):
+
+	placas = [ i for (i,) in Abastecimento.objects.filter(hodometro__gte=0).values_list('veiculo__placa').distinct()]
+	data4 =		json.dumps(placas)
 	return HttpResponse(data4, content_type='application/json')
 
 def mean(data):
