@@ -18,7 +18,6 @@ from abastecimento.models import Abastecimento,Posto,Veiculo,Operador
 
 # 	search_fields = ['username']
 
-
 # admin.site.register(Responsavel, ResponsavelAdmin)
 
 class AbastecimentoResource(resources.ModelResource):

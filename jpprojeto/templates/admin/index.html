@@ -33,13 +33,51 @@
 
 		<script type="text/javascript">
 		   $(document).ready(function () {
+		   		var formateDate = function(date,standart){
+		   			var formated = '';
+		   			if(standart){
+
+	                	var dd = date.getDate();
+						var mm = date.getMonth()+1; //January is 0!
+						var yyyy = date.getFullYear();
+						if(dd<10){
+						    dd='0'+dd
+						} 
+						if(mm<10){
+						    mm='0'+mm
+						} 
+						formated = yyyy+'/'+mm+'/'+dd;
+		   			}else{
+		   				var dd = date.getDate();
+						var mm =  date.getMonth()+1; //January is 0!
+						var yyyy =  date.getFullYear().toString().substr(2,2);
+						if(dd<10){
+						    dd='0'+dd
+						} 
+						if(mm<10){
+						    mm='0'+mm
+						} 
+						formated = dd+'/'+mm+'/'+ yyyy;
+		   			}
+
+					return formated
+		   		};
 		   		var change_mainGraph = function(evt, params) {
-				    console.log("Changed")
 				    var selected_values  = $("#placas").chosen().val();
 				    var monthsago_selected  = $("#date").chosen().val();
 				    selected_values = selected_values?selected_values:[];
 				    var string_selected_values =  selected_values.join(",");
 				    generateGraph(string_selected_values,'demo',monthsago_selected);
+			  	};
+			  	var change_favoriteGraph = function(evt, params) { 
+				    var selected_values  = $("#placas-favoritas.chosen-select").chosen().val();
+		    		selected_values = selected_values?selected_values:[];
+		    		var monthsago_selected  = $("#date").chosen().val();
+				    var string_selected_values =  selected_values.join(",");
+				    if(params){
+   						$.getJSON( "/update_labels_favorites?placas="+string_selected_values, function( data ) {});
+				    }
+					generateGraph(string_selected_values,'favoritos_graficos',monthsago_selected);
 			  	};
 		   		var generateGraph = function(placas,div_initial,monthsago){
 		   			var div_initial = div_initial? div_initial:'demo';
@@ -67,22 +105,13 @@
 					var labels = ['Date'];
 					if (data){
 						for (var i = 0; i < data.labels.length; ++i) {
-					    var label = '' + data.labels[i];
-					    labels[i + 1] = label;
-					  }
-					}else{
-
-					  for (var i = 0; i < numSeries; ++i) {
-					    var label = '' + i;
-					    label = 's' + '000'.substr(label.length) + label;
-					    labels[i + 1] = label;
+					    	var label = '' + data.labels[i];
+					    	labels[i + 1] = label;
 					  }
 					}
 					var dataSource = []
 					if (data){
-					dataSource = data.data.map(function(a){var newArray = [new Date(a[0])]; return newArray.concat(a.slice(1)); })
-					}else{
-						dataSource = getData(numSeries, numRows, isStacked)
+						dataSource = data.data.map(function(a){var newArray = [new Date(a[0])]; return newArray.concat(a.slice(1)); })
 					}
 				  	var g = new Dygraph(
 				      div,
@@ -92,39 +121,22 @@
 				        height: 320,
 				        labels: labels.slice(),
 				        stackedGraph: isStacked,
-
 				        highlightCircleSize: 2,
 				        strokeWidth: 1,
 				        strokeBorderWidth: isStacked ? null : 1,
 				        errorBars: false ,
+				        xRangePad:20,
+				        yRangePad: 20,
+				        avoidMinZero: false,
+				        drawAxesAtZero: false,
 				        axes: {
 				        	x: {
 					          axisLabelFormatter: function(d, gran) {
-									var dd = d.getDate();
-									var mm =  d.getMonth()+1; //January is 0!
-									var yyyy =  d.getFullYear().toString().substr(2,2);
-									if(dd<10){
-									    dd='0'+dd
-									} 
-									if(mm<10){
-									    mm='0'+mm
-									} 
-									var today = dd+'/'+mm+'/'+ yyyy;
-					              return today;
+			              		return formateDate(d,false);
 					          },
 					          valueFormatter: function(d, gran,a,b,c) {
-					          		var date = new Date(d);
-									var dd = date.getDate();
-									var mm =  date.getMonth()+1; //January is 0!
-									var yyyy =  date.getFullYear();
-									if(dd<10){
-									    dd='0'+dd
-									} 
-									if(mm<10){
-									    mm='0'+mm
-									} 
-									var today = dd+'/'+mm+'/'+ yyyy;
-					              return today;
+				          		var date = new Date(d);
+								return formateDate(date,false);
 					          }
 					        },
 				            y: {
@@ -132,22 +144,16 @@
 				                    return y+ 'Km';
 				                },
 				                valueFormatter: function (y,vv,a,b,index) {
-				                	var today = new Date(b.lastx_)
-				                	var dd = today.getDate();
-									var mm = today.getMonth()+1; //January is 0!
-									var yyyy = today.getFullYear();
-									if(dd<10){
-									    dd='0'+dd
-									} 
-									if(mm<10){
-									    mm='0'+mm
-									} 
-									var today = yyyy+'/'+mm+'/'+dd;
+				                	var date = new Date(b.lastx_)
+									var today = formateDate(date,true);
+									var returned = y+' Km'
 				                	if (data && data.litros){
-				                    	return y+ 'Km - litros: '+data.litros[a][today];
-				                	}else{
-				                    	return y+ 'Km - litros:'+index;
+				                    	returned+= ' - litros: '+data.litros[a][today];
+				                	}
+				                	if (data && data.diffs){
+				                    	returned +=' - diferença:'+data.diffs[a][today];
 				                    }
+				                    return returned
 				                }               
 				            }
 				        },
@@ -166,7 +172,6 @@
 				  	};
 					g.updateOptions({clickCallback: onclick}, true);
 					g.setSelection(false, 's005');
-					//console.log(g);
 				};
 
 				$.getJSON( "/labels_available", function( data ) {
@@ -187,7 +192,12 @@
 						width: "95%"
 					});
 					$('#placas').on('change',change_mainGraph );
-					$('#date').on('change', change_mainGraph);
+					$('#date').on('change', function (evt,params) {
+						change_mainGraph();
+						change_favoriteGraph();
+
+					});
+					change_mainGraph();
 
 				  	$.getJSON( "/labels_favorites", function( dataFavorite ) {
 			   			selectId = document.getElementById('placas-favoritas');
@@ -204,26 +214,9 @@
 							no_results_text: "Oops, Nada Encontrado!",
 							width: "95%"
 						});
-						$('#placas-favoritas').on('change', function(evt, params) {
-						    console.log("Changed");
-						    var selected_values  = $("#placas-favoritas.chosen-select").chosen().val();
-				    		selected_values = selected_values?selected_values:[];
-				    		var monthsago_selected  = $("#date").chosen().val();
-						    var string_selected_values =  selected_values.join(",");
-
-		   					$.getJSON( "/update_labels_favorites?placas="+string_selected_values, function( data ) {});
-							generateGraph(string_selected_values,'favoritos_graficos',monthsago_selected);
-
-
-					  	});
-					  	var selected_values  = $("#placas-favoritas.chosen-select").chosen().val();
-			    		selected_values = selected_values?selected_values:[];
-			    		var monthsago_selected  = $("#date").chosen().val();
-					    var string_selected_values =  selected_values.join(",");
-						generateGraph(string_selected_values,'favoritos_graficos',monthsago_selected);
-
+						$('#placas-favoritas').on('change',change_favoriteGraph);
+						change_favoriteGraph();
 					});
-					generateGraph();
 
 				});
 				

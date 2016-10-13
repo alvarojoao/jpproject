@@ -37,6 +37,7 @@ def home(request):
 	
 	finalarray = []
 	veiculos_litros = {}
+	veiculos_diff = {}
 
 	if len(placas)>0:
 		dates =  map(lambda (x,):x.strftime("%Y/%m/%d"),Abastecimento.objects.filter(veiculo__placa__in=placas,criado_date__range=[new_start, end]).order_by('criado_date').values_list('criado_date').distinct())
@@ -47,6 +48,7 @@ def home(request):
 			veiculos_data[pl] =   Abastecimento.objects.filter(veiculo__placa=pl,criado_date__range=[new_start, end]).order_by('criado_date').values('hodometro','criado_date','quantidade')
 			consumption = {}
 			litros = {}
+			diffs = {}
 			consumption_datavalues = []
 			anterior_value = {}
 			for i,veiculo_data in enumerate(veiculos_data[pl]):
@@ -57,10 +59,12 @@ def home(request):
 					consumption[veiculo_data['criado_date'].strftime("%Y/%m/%d")]=consumo_value
 					consumption_datavalues.append(consumo_value)
 					litros[veiculo_data['criado_date'].strftime("%Y/%m/%d")]=anterior_value['quantidade']
+					diffs[veiculo_data['criado_date'].strftime("%Y/%m/%d")]=str(veiculo_data['hodometro'])+'-'+str(anterior_value['hodometro'])
 					anterior_value = veiculo_data
 			veiculos_consumption[pl] = consumption
 			veiculos_litros[pl] = litros
-			
+			veiculos_diff[pl] = diffs
+
 
 			# if len(consumption_datavalues)>0:
 			# 	std_value = pstdev(consumption_datavalues)
@@ -82,6 +86,7 @@ def home(request):
 	consumption_data = {}
 	consumption_data['data'] = finalarray
 	consumption_data['litros'] = veiculos_litros
+	consumption_data['diffs'] = veiculos_diff
 	consumption_data['labels'] = placas
 
 	data4 =		json.dumps(consumption_data)
