@@ -197,7 +197,7 @@
 	 						initial_index++;
 		 				}
 		 				for(i = 0;i<dataFavorite.length;i++) {   
-		 					$('#placas-favoritas option[value='+dataFavorite[i]+']').prop('selected', true);			
+		 					$('#placas-favoritas option[value="'+dataFavorite[i]+'"]').prop('selected', true);			
 		 				}
 		 				$("#placas-favoritas.chosen-select").chosen({
 							disable_search_threshold: 10,
@@ -206,9 +206,12 @@
 						});
 						$('#placas-favoritas').on('change', function(evt, params) {
 						    console.log("Changed");
-						    var selected_values  = $(".chosen-select").chosen().val();
+						    var selected_values  = $("#placas-favoritas.chosen-select").chosen().val();
+				    		selected_values = selected_values?selected_values:[];
+				    		var monthsago_selected  = $("#date").chosen().val();
 						    var string_selected_values =  selected_values.join(",");
-							generateGraph(string_selected_values,'favoritos_graficos');
+
+							// generateGraph(string_selected_values,'favoritos_graficos',);
 		   					$.getJSON( "/update_labels_favorites?placas="+string_selected_values, function( data ) {});
 
 					  	});

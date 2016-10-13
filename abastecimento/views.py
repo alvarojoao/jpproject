@@ -8,6 +8,7 @@ import math
 from datetime import datetime, date,timedelta
 from urlparse import urlparse, parse_qs
 import time
+from django.db import transaction
 
 def home(request):
 	"""
@@ -97,17 +98,21 @@ def labels_favorites(request):
 	data4 =		json.dumps(placas)
 	return HttpResponse(data4, content_type='application/json')
 def update_labels_favorites(request):
-	placas = request.GET.get('placas', None)
-	if placas:
-		placas = placas.split(',')
-	else:
-		placas = []
-	for veiculo in Veiculo.objects.all():
-		if veiculo.placa in placas:
-			veiculo.favorito=True
+	with transaction.atomic():
+		placas = request.GET.get('placas', None)
+		if placas:
+			placas = placas.split(',')
 		else:
-			veiculo.favorito=False
-		veiculo.save()
+			placas = []
+		for veiculo in Veiculo.objects.all():
+			if veiculo.placa in placas:
+				veiculo.favorito=True
+			else:
+				veiculo.favorito=False
+			veiculo.save()
+	data4 =		json.dumps("ok")
+
+	return HttpResponse(data4, content_type='application/json')
 
 def mean(data):
     """Return the sample arithmetic mean of data."""
