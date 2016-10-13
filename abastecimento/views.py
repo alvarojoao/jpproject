@@ -16,6 +16,7 @@ def home(request):
 	"""
 
 	# data = simplejson.dumps(some_data_to_dump)
+	std = request.GET.get('std', False)
 	placas = request.GET.get('placas', None)
 	if placas:
 		placas = placas.split(',')
@@ -65,22 +66,21 @@ def home(request):
 			veiculos_litros[pl] = litros
 			veiculos_diff[pl] = diffs
 
-
-			# if len(consumption_datavalues)>0:
-			# 	std_value = pstdev(consumption_datavalues)
-			# else:
-			# 	std_value = 0
-			# with_std_value = False
-			# if with_std_value:
-			# 	consumption_data_data = [[data_criado,[dif,std_value]] for data_criado,dif,litros in consumption]
-			# else:
-			# 	consumption_data_data = [[data_criado,dif] for data_criado,dif,litros in consumption]
+			# if std:
+			# 	if len(consumption_datavalues)>1:
+			# 		std_value = pstdev(consumption_datavalues)
+			# 	else:
+			# 		std_value = 0
+			# 	with_std_value = False
+			# 	if with_std_value:
+			# 		consumption_data_data = [[data_criado,[dif,std_value]] for data_criado,dif,litros in consumption]
+			# 	else:
+			# 		consumption_data_data = [[data_criado,dif] for data_criado,dif,litros in consumption]
 
 		for i,date_val in enumerate(dates):
 			finalarray.append([date_val])
 			for pl in placas:
 				finalarray[i].append(veiculos_consumption[pl].get(date_val,None))
-
 
 	# print query
 	consumption_data = {}
@@ -92,6 +92,7 @@ def home(request):
 	data4 =		json.dumps(consumption_data)
 
 	return HttpResponse(data4, content_type='application/json')
+
 def labels_available(request):
 
 	placas = [ i for (i,) in Abastecimento.objects.filter(hodometro__gte=0).values_list('veiculo__placa').distinct()]
@@ -102,6 +103,7 @@ def labels_favorites(request):
 	placas = [ i for (i,) in Veiculo.objects.filter(favorito=True).values_list('placa').distinct()]
 	data4 =		json.dumps(placas)
 	return HttpResponse(data4, content_type='application/json')
+
 def update_labels_favorites(request):
 	with transaction.atomic():
 		placas = request.GET.get('placas', None)

@@ -16,9 +16,7 @@
 
 			.many .dygraph-legend > span.highlight { display: inline; }
 		</style>
-		<select id="placas" class="chosen-select" data-placeholder="Escolha os Equipamentos ..." style="width:350px;" multiple="" tabindex="2">
-      	</select>
-      	<select id="date" class="chosen-select" data-placeholder="Meses atrás..." style="width:350px;" tabindex="3">
+		<select id="date" class="chosen-select" data-placeholder="Meses atrás..." style="width:350px; padding:10px;" tabindex="3">
       		<option value="1">1 Mês</option>
       		<option value="2">2 Mês</option>
       		<option value="3">3 Mês</option>
@@ -26,10 +24,14 @@
       		<option value="6">6 Mês</option>
       		<option value="12" selected="">12 Mês/ 1 Ano</option>
       	</select>
-		<div id="demo"></div>
-		<select id="placas-favoritas" class="chosen-select" data-placeholder="Escolha os Equipamentos Favoritos..." style="width:350px;" multiple="" tabindex="4">
+		<select id="placas-favoritas" class="chosen-select" data-placeholder="Escolha os Equipamentos Favoritos..." style="width:350px;padding:10px;" multiple="" tabindex="4">
       	</select>
-		<div id="favoritos_graficos"></div>
+		<div style="padding:20px;" id="favoritos_graficos"></div>
+		
+		<select id="placas" class="chosen-select" data-placeholder="Escolha os Equipamentos ..." style="width:350px;padding:10px;" multiple="" tabindex="2">
+      	</select>
+      	
+		<div style="padding:20px;" id="demo"></div>
 
 		<script type="text/javascript">
 		   $(document).ready(function () {
