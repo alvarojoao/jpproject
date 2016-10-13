@@ -211,10 +211,17 @@
 				    		var monthsago_selected  = $("#date").chosen().val();
 						    var string_selected_values =  selected_values.join(",");
 
-							// generateGraph(string_selected_values,'favoritos_graficos',);
 		   					$.getJSON( "/update_labels_favorites?placas="+string_selected_values, function( data ) {});
+							generateGraph(string_selected_values,'favoritos_graficos',monthsago_selected);
+
 
 					  	});
+					  	var selected_values  = $("#placas-favoritas.chosen-select").chosen().val();
+			    		selected_values = selected_values?selected_values:[];
+			    		var monthsago_selected  = $("#date").chosen().val();
+					    var string_selected_values =  selected_values.join(",");
+						generateGraph(string_selected_values,'favoritos_graficos',monthsago_selected);
+
 					});
 					generateGraph();
 

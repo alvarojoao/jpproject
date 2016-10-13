@@ -60,6 +60,7 @@ class Veiculo(models.Model):
 	def __str__(self):
 		return unicode(self.placa)+' - TIPO: '+str(self.tipo)
 
+
 TIPOS_COMBUSTIVEL = (
 	('DS5', 'DS5'),
 	('ALC', 'Alcool'),
