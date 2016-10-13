@@ -21,23 +21,29 @@ def home(request):
 	else:
 		placas = []
 		
+	date_months = request.GET.get('monthsago', 12)
+	
+	if date_months:
+		date_months = int(date_months)
 	# data2 = serializers.serialize('json', some_data_to_dump)
-	start = date(2016, 01, 01)
+	start = datetime.today()
 	end = datetime.today()
-	new_end = end + timedelta(days=1) #day can be negative
-
+	new_start = start + timedelta(days=-1*date_months * 365/12) #day can be negative
+	print new_start,end
 	#placas
 	if len(placas)==0:
-		placas = [ i for (i,) in Abastecimento.objects.filter(hodometro__gte=0,criado_date__range=[start, new_end]).values_list('veiculo__placa').distinct()]
+		placas = [ i for (i,) in Abastecimento.objects.filter(hodometro__gte=0,criado_date__range=[new_start, end]).values_list('veiculo__placa').distinct()]
+	
+	finalarray = []
+	veiculos_litros = {}
 
 	if len(placas)>0:
-		dates =  map(lambda (x,):x.strftime("%Y/%m/%d"),Abastecimento.objects.filter(veiculo__placa__in=placas,criado_date__range=[start, new_end]).order_by('criado_date').values_list('criado_date').distinct())
+		dates =  map(lambda (x,):x.strftime("%Y/%m/%d"),Abastecimento.objects.filter(veiculo__placa__in=placas,criado_date__range=[new_start, end]).order_by('criado_date').values_list('criado_date').distinct())
 		veiculos_data = {}
 		veiculos_consumption = {}
-		veiculos_litros = {}
 
 		for pl in placas:
-			veiculos_data[pl] =   Abastecimento.objects.filter(veiculo__placa=pl,criado_date__range=[start, new_end]).order_by('criado_date').values('hodometro','criado_date','quantidade')
+			veiculos_data[pl] =   Abastecimento.objects.filter(veiculo__placa=pl,criado_date__range=[new_start, end]).order_by('criado_date').values('hodometro','criado_date','quantidade')
 			consumption = {}
 			litros = {}
 			consumption_datavalues = []
@@ -65,7 +71,6 @@ def home(request):
 			# else:
 			# 	consumption_data_data = [[data_criado,dif] for data_criado,dif,litros in consumption]
 
-		finalarray = []
 		for i,date_val in enumerate(dates):
 			finalarray.append([date_val])
 			for pl in placas:
@@ -86,6 +91,23 @@ def labels_available(request):
 	placas = [ i for (i,) in Abastecimento.objects.filter(hodometro__gte=0).values_list('veiculo__placa').distinct()]
 	data4 =		json.dumps(placas)
 	return HttpResponse(data4, content_type='application/json')
+
+def labels_favorites(request):
+	placas = [ i for (i,) in Veiculo.objects.filter(favorito=True).values_list('placa').distinct()]
+	data4 =		json.dumps(placas)
+	return HttpResponse(data4, content_type='application/json')
+def update_labels_favorites(request):
+	placas = request.GET.get('placas', None)
+	if placas:
+		placas = placas.split(',')
+	else:
+		placas = []
+	for veiculo in Veiculo.objects.all():
+		if veiculo.placa in placas:
+			veiculo.favorito=True
+		else:
+			veiculo.favorito=False
+		veiculo.save()
 
 def mean(data):
     """Return the sample arithmetic mean of data."""

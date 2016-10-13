@@ -17,11 +17,15 @@ from django.conf.urls import url, include
 
 from django.conf.urls import url
 from django.contrib import admin
-from abastecimento.views import home,labels_available
+from abastecimento.views import home,labels_available,labels_favorites,update_labels_favorites
 admin.autodiscover()
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^customgraph/', home),
-    url(r'^labels_available/', labels_available)
+    url(r'^labels_available/', labels_available),
+    url(r'^labels_favorites/', labels_favorites),
+    url(r'^update_labels_favorites/', update_labels_favorites)
+
+
 ]

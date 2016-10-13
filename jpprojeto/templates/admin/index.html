@@ -16,38 +16,48 @@
 
 			.many .dygraph-legend > span.highlight { display: inline; }
 		</style>
-		<select id="placas" class="chosen-select" data-placeholder="Escolha os Equipamentos ..." style="width:350px;" multiple="" tabindex="3">
-            <option value="todos" selected="">Todos</option>
-            
-          </select>
+		<select id="placas" class="chosen-select" data-placeholder="Escolha os Equipamentos ..." style="width:350px;" multiple="" tabindex="2">
+      	</select>
+      	<select id="date" class="chosen-select" data-placeholder="Meses atrás..." style="width:350px;" tabindex="3">
+      		<option value="1">1 Mês</option>
+      		<option value="2">2 Mês</option>
+      		<option value="3">3 Mês</option>
+      		<option value="4">4 Mês</option>
+      		<option value="6">6 Mês</option>
+      		<option value="12" selected="">12 Mês/ 1 Ano</option>
+      	</select>
 		<div id="demo"></div>
-		<div id="graphdiv4"
-		  style="width:480px; height:320px;"></div>
+		<select id="placas-favoritas" class="chosen-select" data-placeholder="Escolha os Equipamentos Favoritos..." style="width:350px;" multiple="" tabindex="4">
+      	</select>
+		<div id="favoritos_graficos"></div>
+
 		<script type="text/javascript">
 		   $(document).ready(function () {
-		   		
-				var getData = function(numSeries, numRows, isStacked) {
-				  var data = [];
+		   		var change_mainGraph = function(evt, params) {
+				    console.log("Changed")
+				    var selected_values  = $("#placas").chosen().val();
+				    var monthsago_selected  = $("#date").chosen().val();
+				    selected_values = selected_values?selected_values:[];
+				    var string_selected_values =  selected_values.join(",");
+				    generateGraph(string_selected_values,'demo',monthsago_selected);
+			  	};
+		   		var generateGraph = function(placas,div_initial,monthsago){
+		   			var div_initial = div_initial? div_initial:'demo';
+		   			var monthsago_val = monthsago?monthsago:12
+		   			var placas_query = placas?'placas='+placas+'&' :''
+		   			var monthsago_query = monthsago_val?'monthsago='+monthsago_val+'&':''
+		   			var query =  placas_query+monthsago_query
+		   			$.getJSON( "/customgraph?"+query, function( data ) {
+	   					$('#'+div_initial).empty()
+						makeGraph(div_initial,"few", 1, 10, false,data);
+						makeGraph(div_initial,"few", 1, 10, true,data);
+						makeGraph(div_initial,"many",1, 10, false,data);
+						makeGraph(div_initial,"many",1, 10, true,data);
+					});
+		   		};
 
-				  for (var j = 0; j < numRows; ++j) {
-				    data[j] = [j];
-				  }
-				  for (var i = 0; i < numSeries; ++i) {
-				    var val = 0;
-				    for (var j = 0; j < numRows; ++j) {
-				      if (isStacked) {
-				        val = Math.random();
-				      } else {
-				        val += Math.random() - 0.5;
-				      }
-				      data[j][i + 1] = [val,0.10];
-				    }
-				  }
-				  return data;
-				};
-
-				var makeGraph = function(className, numSeries, numRows, isStacked,data) {
-					var demo = document.getElementById('demo');
+				var makeGraph = function(div_name,className, numSeries, numRows, isStacked,data) {
+					var demo = document.getElementById(div_name);
 					var div = document.createElement('div');
 					div.className = className;
 					div.style.display = 'inline-block';
@@ -88,6 +98,35 @@
 				        strokeBorderWidth: isStacked ? null : 1,
 				        errorBars: false ,
 				        axes: {
+				        	x: {
+					          axisLabelFormatter: function(d, gran) {
+									var dd = d.getDate();
+									var mm =  d.getMonth()+1; //January is 0!
+									var yyyy =  d.getFullYear().toString().substr(2,2);
+									if(dd<10){
+									    dd='0'+dd
+									} 
+									if(mm<10){
+									    mm='0'+mm
+									} 
+									var today = dd+'/'+mm+'/'+ yyyy;
+					              return today;
+					          },
+					          valueFormatter: function(d, gran,a,b,c) {
+					          		var date = new Date(d);
+									var dd = date.getDate();
+									var mm =  date.getMonth()+1; //January is 0!
+									var yyyy =  date.getFullYear();
+									if(dd<10){
+									    dd='0'+dd
+									} 
+									if(mm<10){
+									    mm='0'+mm
+									} 
+									var today = dd+'/'+mm+'/'+ yyyy;
+					              return today;
+					          }
+					        },
 				            y: {
 				                axisLabelFormatter: function (y,vv,a,b,c) {
 				                    return y+ 'Km';
@@ -137,24 +176,48 @@
  						selectId.options[initial_index] = new Option(data[i], data[i]);
  						initial_index++;
 	 				}
-	 				$(".chosen-select").chosen({
+	 				$("#placas.chosen-select").chosen({
 						disable_search_threshold: 10,
 						no_results_text: "Oops, Nada Encontrado!",
 						width: "95%"
 					});
-					$('.chosen-select').on('change', function(evt, params) {
-					    console.log("Changed")
-					    var selected_values  = $(".chosen-select").chosen().val();
-				  	});
+				  	$("#date.chosen-select").chosen({
+						disable_search_threshold: 10,
+						no_results_text: "Oops, Nada Encontrado!",
+						width: "95%"
+					});
+					$('#placas').on('change',change_mainGraph );
+					$('#date').on('change', change_mainGraph);
+
+				  	$.getJSON( "/labels_favorites", function( dataFavorite ) {
+			   			selectId = document.getElementById('placas-favoritas');
+			   			initial_index = selectId.options.length
+						for(i = 0;i<data.length;i++) {   			
+	 						selectId.options[initial_index] = new Option(data[i], data[i]);
+	 						initial_index++;
+		 				}
+		 				for(i = 0;i<dataFavorite.length;i++) {   
+		 					$('#placas-favoritas option[value='+dataFavorite[i]+']').prop('selected', true);			
+		 				}
+		 				$("#placas-favoritas.chosen-select").chosen({
+							disable_search_threshold: 10,
+							no_results_text: "Oops, Nada Encontrado!",
+							width: "95%"
+						});
+						$('#placas-favoritas').on('change', function(evt, params) {
+						    console.log("Changed");
+						    var selected_values  = $(".chosen-select").chosen().val();
+						    var string_selected_values =  selected_values.join(",");
+							generateGraph(string_selected_values,'favoritos_graficos');
+		   					$.getJSON( "/update_labels_favorites?placas="+string_selected_values, function( data ) {});
+
+					  	});
+					});
+					generateGraph();
 
 				});
-				$.getJSON( "/customgraph", function( data ) {
-		   			
-					makeGraph("few", 1, 10, false,data);
-					makeGraph("few", 1, 10, true,data);
-					makeGraph("many",1, 10, false,data);
-					makeGraph("many",1, 10, true,data);
-				});
+				
+				
 		    });
 		</script>
 

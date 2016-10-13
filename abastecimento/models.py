@@ -44,12 +44,14 @@ TIPO_VEICULOS = (
 	('TERCEIRO-SEM', 'Terceirizados sem o desconto de combustível na medição'),
 	('TERCEIRO-COM', 'Terceirizados com desconto do combustível na medição'),
 )
+
+
 class Veiculo(models.Model):
 	placa = models.CharField(verbose_name="Placa/Codigo Interno",max_length=30,primary_key=True)
 	
 	tipo = models.CharField(max_length=13, choices=TIPO_VEICULOS,blank=True, null=True)
 	observacao = models.TextField( blank=True, null=True)
-
+	favorito = models.BooleanField(verbose_name="Favorito no grafico",default=False)
 	criado_date = models.DateField("Data Criada",
 	        auto_now_add=True)
 	atualizado_date = models.DateTimeField("Data Atualizado",
