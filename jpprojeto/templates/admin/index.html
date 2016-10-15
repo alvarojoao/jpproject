@@ -9,6 +9,14 @@
 		<script type="text/javascript" src="{% static "chosen/chosen.jquery.js" %} "></script>
   		<link rel="stylesheet" type="text/css" href="{% static "chosen/chosen.css" %}" />
 
+		<!-- Include Required Prerequisites -->
+		<script type="text/javascript" src="{% static "moment/min/moment.min.js" %} "></script>
+		<link rel="stylesheet" type="text/css" href="{% static "css/bootstrap_admin/bootstrap.min.css" %}"  />
+		 
+		<!-- Include Date Range Picker -->
+		<script type="text/javascript" src="{% static "bootstrap-daterangepicker/daterangepicker.js" %} " ></script>
+		<link rel="stylesheet" type="text/css" href="{% static "bootstrap-daterangepicker/daterangepicker.css" %}" />
+
 		<style type="text/css">
 			.few .dygraph-legend > span.highlight { border: 1px solid grey; }
 
@@ -16,7 +24,20 @@
 
 			.many .dygraph-legend > span.highlight { display: inline; }
 		</style>
-		<h1> Meses atrás</h1>
+		<h1>Datas de Inicio e Fim</h1>
+
+		<input type="text" id="date_range" name="daterange" value="01/01/2016 - 31/01/2016" />
+
+		<script type="text/javascript">
+		$(function() {
+		    $('input[name="daterange"]').daterangepicker({autoApply:true,locale: {
+            format: 'DD/MM/YYYY'
+        	}});
+		    $('input[name="daterange"]').on('apply.daterangepicker', function(ev, picker) {
+		      $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+		  });
+		});
+		</script> 
 		<select id="date" class="chosen-select" data-placeholder="Meses atrás..." style="width:350px; padding:10px;" tabindex="3">
       		<option value="1">1 Mês</option>
       		<option value="2">2 Mês</option>
@@ -24,7 +45,7 @@
       		<option value="4">4 Mês</option>
       		<option value="6">6 Mês</option>
       		<option value="12" selected="">12 Mês/ 1 Ano</option>
-      	</select>
+      	</select> 
 		<h1> Placas Favoritas </h1>
 		<select id="placas-favoritas" class="chosen-select" data-placeholder="Escolha os Equipamentos Favoritos..." style="width:350px;padding:10px;" multiple="" tabindex="4">
       	</select>
@@ -69,26 +90,30 @@
 		   		var change_mainGraph = function(evt, params) {
 				    var selected_values  = $("#placas").chosen().val();
 				    var monthsago_selected  = $("#date").chosen().val();
+				    var date_range  = $("#date_range").val();
+
 				    selected_values = selected_values?selected_values:[];
 				    var string_selected_values =  selected_values.join(",");
-				    generateGraph(string_selected_values,'demo',monthsago_selected);
+				    generateGraph(string_selected_values,'demo',monthsago_selected,date_range);
 			  	};
 			  	var change_favoriteGraph = function(evt, params) { 
 				    var selected_values  = $("#placas-favoritas.chosen-select").chosen().val();
 		    		selected_values = selected_values?selected_values:[];
 		    		var monthsago_selected  = $("#date").chosen().val();
+				    var date_range  = $("#date_range").val();
 				    var string_selected_values =  selected_values.join(",");
 				    if(params){
    						$.getJSON( "/update_labels_favorites?placas="+string_selected_values, function( data ) {});
 				    }
-					generateGraph(string_selected_values,'favoritos_graficos',monthsago_selected);
+					generateGraph(string_selected_values,'favoritos_graficos',monthsago_selected,date_range);
 			  	};
-		   		var generateGraph = function(placas,div_initial,monthsago){
+		   		var generateGraph = function(placas,div_initial,monthsago,date_range){
 		   			var div_initial = div_initial? div_initial:'demo';
 		   			var monthsago_val = monthsago?monthsago:12
 		   			var placas_query = placas?'placas='+placas+'&' :''
 		   			var monthsago_query = monthsago_val?'monthsago='+monthsago_val+'&':''
-		   			var query =  placas_query+monthsago_query
+		   			var date_range = date_range?'date_range='+date_range+'&':''
+		   			var query =  placas_query+monthsago_query+date_range
 		   			$.getJSON( "/customgraph?"+query, function( data ) {
 	   					$('#'+div_initial).empty()
 						makeGraph(div_initial,"few", 1, 10, false,data);

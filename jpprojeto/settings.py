@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'djangobower',
 ]
 
-
 # Django-bower
 # ------------
 # Specifie path to components root (you need to use absolute path)
@@ -60,7 +59,8 @@ BOWER_INSTALLED_APPS = (
     'd3#3.3.6',
     'nvd3#1.1.12-beta',
     'dygraphs#~1.1.0',
-    'chosen#~1.6.2'
+    'chosen#~1.6.2',
+    'bootstrap-daterangepicker#~2.1.24'
 )
 
 

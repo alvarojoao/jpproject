@@ -10,10 +10,12 @@ from urlparse import urlparse, parse_qs
 import time
 from django.db import transaction
 
+
 def home(request):
 	"""
 	home page
 	"""
+
 
 	# data = simplejson.dumps(some_data_to_dump)
 	std = request.GET.get('std', False)
@@ -22,16 +24,18 @@ def home(request):
 		placas = placas.split(',')
 	else:
 		placas = []
-		
 	date_months = request.GET.get('monthsago', 12)
-	
+	date_range = request.GET.get('date_range', 12)
+	date_str_start,date_str_end = date_range.replace(" ","").split('-')
+	print date_str_start,date_str_end
+	start_date , end_date = datetime.strptime(date_str_start, '%d/%m/%Y'),datetime.strptime(date_str_end, '%d/%m/%Y')
+	print start_date , end_date 
 	if date_months:
 		date_months = int(date_months)
 	# data2 = serializers.serialize('json', some_data_to_dump)
 	start = datetime.today()
 	end = datetime.today()
 	new_start = start + timedelta(days=-1*date_months * 365/12) #day can be negative
-	print new_start,end
 	#placas
 	if len(placas)==0:
 		placas = [ i for (i,) in Abastecimento.objects.filter(hodometro__gte=0,criado_date__range=[new_start, end]).values_list('veiculo__placa').distinct()]
