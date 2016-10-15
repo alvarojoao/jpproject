@@ -7,6 +7,8 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 
 from django.db.models import Q
+from django.core.exceptions import ValidationError
+from django.utils.translation import ugettext_lazy as _
 
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
@@ -16,6 +18,15 @@ from django.contrib.auth.models import (
 
 # 	def __str__(self):              # __unicode__ on Python 2
 # 		return self.username
+
+class Obra(models.Model):
+	nome = models.CharField(max_length=200,primary_key=True)
+	criado_date = models.DateField("Data Criada", auto_now_add=True)
+	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
+
+	def __str__(self):
+		return self.nome
+
 
 class Operador(models.Model):
 	nome = models.CharField(max_length=200,primary_key=True)
@@ -42,7 +53,12 @@ class Posto(models.Model):
 TIPO_VEICULOS = (
 	('PROPRIO', 'Frota própria'),
 	('TERCEIRO-SEM', 'Terceirizados sem o desconto de combustível na medição'),
-	('TERCEIRO-COM', 'Terceirizados com desconto do combustível na medição'),
+	('TERCEIRO-COM', 'Terceirizados com desconto do combustível na medição')
+)
+
+MAQUINA_VEICULO = (
+	(False, 'Maquina'),
+	(True, 'Veiculo')
 )
 
 
@@ -50,6 +66,7 @@ class Veiculo(models.Model):
 	placa = models.CharField(verbose_name="Placa/Codigo Interno",max_length=30,primary_key=True)
 	
 	tipo = models.CharField(max_length=13, choices=TIPO_VEICULOS,blank=True, null=True)
+	isVeiculo = models.BooleanField(choices=MAQUINA_VEICULO,default=True,blank=False, null=False,verbose_name="Veiculo/Maquina ")
 	observacao = models.TextField( blank=True, null=True)
 	favorito = models.BooleanField(verbose_name="Favorito no grafico",default=False)
 	criado_date = models.DateField("Data Criada",
@@ -70,16 +87,26 @@ TIPOS_COMBUSTIVEL = (
 	('ARLA', 'ARLA'),
 	('LUB', 'LUB'),
 )
+
+def validate_hodometro_and_veiculo_type(value):
+	if value <0 :
+		raise ValidationError(
+			_('Esse campo não pode ter valor %(value)s, o campo deve ter valor maior ou igual a zero'),
+			params={'value': value},
+		)
+
+
 class Abastecimento(models.Model):
 	vale = models.CharField(max_length=50,verbose_name="Vale/Cupom",blank=True, null=True)
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
 	motorista = models.ForeignKey(Operador,verbose_name="Motorista/Operador",related_name='+')
 	posto = models.ForeignKey(Posto,verbose_name="Posto de abastecimento")
-	hodometro = models.IntegerField('Hodômetro',default=0)
+	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [validate_hodometro_and_veiculo_type])
 	quantidade = models.FloatField('Quantidade em Litros')
 	valor = models.FloatField('Valor Pago R$')
 	combustivel = models.CharField(max_length=10, choices=TIPOS_COMBUSTIVEL)
 	responsavel = models.ForeignKey(User,verbose_name="Responsável pelo abastecimento")
+	obra = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
 
 	notafiscal = models.CharField(max_length=20,blank=True, null=True)
 

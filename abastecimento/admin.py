@@ -12,7 +12,9 @@ from django.contrib.auth.models import User
 
 # Register your models here.
 from django.db import transaction
-from abastecimento.models import Abastecimento,Posto,Veiculo,Operador
+from abastecimento.models import Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS
+from django import forms
+from django.utils.translation import ugettext_lazy as _
 
 # class ResponsavelAdmin(UserAdmin):
 
@@ -75,6 +77,10 @@ class AbastecimentoResource(resources.ModelResource):
 			permissions.append(Permission.objects.get(name='Can delete posto'))
 			permissions.append(Permission.objects.get(name='Can change posto'))
 			permissions.append(Permission.objects.get(name='Can add posto'))
+
+			permissions.append(Permission.objects.get(name='Can delete obra'))
+			permissions.append(Permission.objects.get(name='Can change obra'))
+			permissions.append(Permission.objects.get(name='Can add obra'))
 			# listobj = Responsavel.objects.filter(username=nome)
 			# obj,created = Responsavel.objects.update_or_create(username=nome,is_staff=True) 
 			# obj.user_permissions.set(permissions)
@@ -94,9 +100,38 @@ class OperadorAdmin(admin.ModelAdmin):
 
 admin.site.register(Operador, OperadorAdmin)
 
+class ObraAdmin(admin.ModelAdmin):
+	pass
+
+
+admin.site.register(Obra, ObraAdmin)
+
+
+class Abastecimentoform(forms.ModelForm):
+	class Meta:
+		model = Abastecimento
+		fields = '__all__'
+
+	def clean(self):
+		cleaned_data = self.cleaned_data
+
+		veiculo = self.cleaned_data.get('veiculo')
+		hodometro = self.cleaned_data.get('hodometro')
+		if veiculo.tipo == TIPO_VEICULOS[0][0] and hodometro<=0:
+			msg = _('Valor %s Invalido de Hodometro/Horimetro   para veiculos do tipo %s'%(hodometro,veiculo.tipo))
+			self._errors["hodometro"] = self.error_class([msg])
+			del cleaned_data["hodometro"]
+			# raise forms.ValidationError(
+			# 			_('Valor %(value)s Invalido de Hodometro/Horimetro   para veiculos do tipo %(tipo)s'),
+			# 			params={'value': hodometro,'tipo':veiculo.tipo},
+			# 		)
+		return cleaned_data
+
 class AbastecimentoAdmin(ImportExportMixin, admin.ModelAdmin):
 	resource_class = AbastecimentoResource
 	
+	form = Abastecimentoform
+
 	list_display = ('id','criado_date','notafiscal','hodometro','quantidade','valor_display','vale', 'responsavel_display','veiculo')
 	search_fields = ['notafiscal', 'veiculo__placa','responsavel__username','posto__nome','observacao']
 	list_filter = ('criado_date','responsavel','veiculo')
@@ -141,10 +176,27 @@ class PostoAdmin(admin.ModelAdmin):
 
 admin.site.register(Posto, PostoAdmin)
 
+class Veiculoform(forms.ModelForm):
+	def __init__(self, *args, **kwargs):
+		super(Veiculoform, self).__init__(*args, **kwargs)
+		self.fields['isVeiculo'].choices = self.fields['isVeiculo'].choices[1:]
+
+	class Meta:
+		model = Veiculo
+		fields = '__all__'
+
+		def clean(self):
+			start_date = self.cleaned_data.get('veiculo')
+			if start_date > end_date:
+				raise forms.ValidationError("Dates are fucked up")
+			return self.cleaned_data
+
 class VeiculoAdmin(admin.ModelAdmin):
 
-    search_fields = ['placa','tipo','observacao']
-    list_filter = ('criado_date','atualizado_date','tipo')
+	form = Veiculoform
+	search_fields = ['placa','tipo','observacao']
+	list_filter = ('criado_date','atualizado_date','tipo')
+	radio_fields = {"isVeiculo": admin.VERTICAL}
 
 
 admin.site.register(Veiculo, VeiculoAdmin)
