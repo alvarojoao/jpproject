@@ -16,7 +16,6 @@ def home(request):
 	home page
 	"""
 
-
 	# data = simplejson.dumps(some_data_to_dump)
 	std = request.GET.get('std', False)
 	placas = request.GET.get('placas', None)
@@ -27,7 +26,6 @@ def home(request):
 	date_months = request.GET.get('monthsago', 12)
 	date_range = request.GET.get('date_range', 12)
 	date_str_start,date_str_end = date_range.replace(" ","").split('-')
-	print date_str_start,date_str_end
 	start_date , end_date = datetime.strptime(date_str_start, '%d/%m/%Y'),datetime.strptime(date_str_end, '%d/%m/%Y')
 	print start_date , end_date 
 	if date_months:
@@ -38,19 +36,19 @@ def home(request):
 	new_start = start + timedelta(days=-1*date_months * 365/12) #day can be negative
 	#placas
 	if len(placas)==0:
-		placas = [ i for (i,) in Abastecimento.objects.filter(hodometro__gte=0,criado_date__range=[new_start, end]).values_list('veiculo__placa').distinct()]
+		placas = [ i for (i,) in Abastecimento.objects.filter(hodometro__gte=0,criado_date__range=[start_date, end_date]).values_list('veiculo__placa').distinct()]
 	
 	finalarray = []
 	veiculos_litros = {}
 	veiculos_diff = {}
 
 	if len(placas)>0:
-		dates =  map(lambda (x,):x.strftime("%Y/%m/%d"),Abastecimento.objects.filter(veiculo__placa__in=placas,criado_date__range=[new_start, end]).order_by('criado_date').values_list('criado_date').distinct())
+		dates =  map(lambda (x,):x.strftime("%Y/%m/%d"),Abastecimento.objects.filter(veiculo__placa__in=placas,criado_date__range=[start_date, end_date]).order_by('criado_date').values_list('criado_date').distinct())
 		veiculos_data = {}
 		veiculos_consumption = {}
 
 		for pl in placas:
-			veiculos_data[pl] =   Abastecimento.objects.filter(veiculo__placa=pl,criado_date__range=[new_start, end]).order_by('criado_date').values('hodometro','criado_date','quantidade')
+			veiculos_data[pl] =   Abastecimento.objects.filter(veiculo__placa=pl,criado_date__range=[start_date, end_date]).order_by('criado_date').values('hodometro','criado_date','quantidade')
 			consumption = {}
 			litros = {}
 			diffs = {}

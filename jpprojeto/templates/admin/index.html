@@ -11,7 +11,7 @@
 
 		<!-- Include Required Prerequisites -->
 		<script type="text/javascript" src="{% static "moment/min/moment.min.js" %} "></script>
-		<link rel="stylesheet" type="text/css" href="{% static "css/bootstrap_admin/bootstrap.min.css" %}"  />
+		<link rel="stylesheet" type="text/css" href="{% static "bootstrap_admin/css/bootstrap.min.css" %}"  />
 		 
 		<!-- Include Date Range Picker -->
 		<script type="text/javascript" src="{% static "bootstrap-daterangepicker/daterangepicker.js" %} " ></script>
@@ -38,14 +38,14 @@
 		  });
 		});
 		</script> 
-		<select id="date" class="chosen-select" data-placeholder="Meses atrás..." style="width:350px; padding:10px;" tabindex="3">
+		<!-- <select id="date" class="chosen-select" data-placeholder="Meses atrás..." style="width:350px; padding:10px;" tabindex="3">
       		<option value="1">1 Mês</option>
       		<option value="2">2 Mês</option>
       		<option value="3">3 Mês</option>
       		<option value="4">4 Mês</option>
       		<option value="6">6 Mês</option>
       		<option value="12" selected="">12 Mês/ 1 Ano</option>
-      	</select> 
+      	</select>  -->
 		<h1> Placas Favoritas </h1>
 		<select id="placas-favoritas" class="chosen-select" data-placeholder="Escolha os Equipamentos Favoritos..." style="width:350px;padding:10px;" multiple="" tabindex="4">
       	</select>
@@ -89,7 +89,7 @@
 		   		};
 		   		var change_mainGraph = function(evt, params) {
 				    var selected_values  = $("#placas").chosen().val();
-				    var monthsago_selected  = $("#date").chosen().val();
+				    var monthsago_selected  = undefined;//$("#date").chosen().val();
 				    var date_range  = $("#date_range").val();
 
 				    selected_values = selected_values?selected_values:[];
@@ -99,7 +99,7 @@
 			  	var change_favoriteGraph = function(evt, params) { 
 				    var selected_values  = $("#placas-favoritas.chosen-select").chosen().val();
 		    		selected_values = selected_values?selected_values:[];
-		    		var monthsago_selected  = $("#date").chosen().val();
+				    var monthsago_selected  = undefined;//$("#date").chosen().val();
 				    var date_range  = $("#date_range").val();
 				    var string_selected_values =  selected_values.join(",");
 				    if(params){
@@ -215,16 +215,22 @@
 						no_results_text: "Oops, Nada Encontrado!",
 						width: "95%"
 					});
-				  	$("#date.chosen-select").chosen({
-						disable_search_threshold: 10,
-						no_results_text: "Oops, Nada Encontrado!",
-						width: "95%"
-					});
+				 //  	$("#date.chosen-select").chosen({
+					// 	disable_search_threshold: 10,
+					// 	no_results_text: "Oops, Nada Encontrado!",
+					// 	width: "95%"
+					// });
 					$('#placas').on('change',change_mainGraph );
-					$('#date').on('change', function (evt,params) {
+					// $('#date').on('change', function (evt,params) {
+					// 	change_mainGraph();
+					// 	change_favoriteGraph();
+
+					// });
+					$('#date_range').on('apply.daterangepicker', function(ev, picker) {
 						change_mainGraph();
 						change_favoriteGraph();
-
+					  // console.log(picker.startDate.format('YYYY-MM-DD'));
+					  // console.log(picker.endDate.format('YYYY-MM-DD'));
 					});
 					change_mainGraph();
 
