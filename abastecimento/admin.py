@@ -115,9 +115,9 @@ class Abastecimentoform(forms.ModelForm):
 	def clean(self):
 		cleaned_data = self.cleaned_data
 
-		veiculo = self.cleaned_data.get('veiculo')
-		hodometro = self.cleaned_data.get('hodometro')
-		if veiculo.tipo == TIPO_VEICULOS[0][0] and hodometro<=0:
+		veiculo = self.cleaned_data.get('veiculo',None)
+		hodometro = self.cleaned_data.get('hodometro',None)
+		if veiculo is not None and hodometro is not None and veiculo.tipo == TIPO_VEICULOS[0][0] and hodometro<=0:
 			msg = _('Valor %s Invalido de Hodometro/Horimetro   para veiculos do tipo %s'%(hodometro,veiculo.tipo))
 			self._errors["hodometro"] = self.error_class([msg])
 			del cleaned_data["hodometro"]
@@ -138,8 +138,10 @@ class AbastecimentoAdmin(ImportExportMixin, admin.ModelAdmin):
 	# readonly_fields=('vale','motorista','responsavel','veiculo','posto')
 	def save_model(self, request, obj, form, change):
 		if not request.user.is_superuser:
-			if not change:
+			if obj.id is None:
 				obj.responsavel = request.user
+			obj.notafiscal =  obj.notafiscal
+
 		obj.save()
 
 	# def get_fields(self,request,obj=None):
@@ -156,7 +158,7 @@ class AbastecimentoAdmin(ImportExportMixin, admin.ModelAdmin):
 		else:	
 			if obj and not obj.responsavel==request.user: # editing an existing object
 				return self.readonly_fields+tuple(obj._meta.get_all_field_names())
-			return self.readonly_fields+('responsavel',)
+			return self.readonly_fields+('responsavel','notafiscal')
 
 
 	# def get_search_results(self, request,queryset,search_term):
