@@ -9,7 +9,9 @@ from datetime import datetime, date,timedelta
 from urlparse import urlparse, parse_qs
 import time
 from django.db import transaction
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def home(request):
 	"""
 	home page
@@ -106,18 +108,22 @@ def home(request):
 	data4 =		json.dumps(consumption_data)
 	return HttpResponse(data4, content_type='application/json')
 
-
+@login_required
 def labels_available(request):
 
 	placas = [ i for (i,) in Abastecimento.objects.filter(hodometro__gte=0).values_list('veiculo__placa').distinct()]
 	data4 =		json.dumps(placas)
 	return HttpResponse(data4, content_type='application/json')
 
+
+
+@login_required
 def labels_favorites(request):
 	placas = [ i for (i,) in Veiculo.objects.filter(favorito=True).values_list('placa').distinct()]
 	data4 =		json.dumps(placas)
 	return HttpResponse(data4, content_type='application/json')
 
+@login_required
 def update_labels_favorites(request):
 	with transaction.atomic():
 		placas = request.GET.get('placas', None)
