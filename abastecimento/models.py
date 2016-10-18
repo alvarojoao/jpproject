@@ -61,7 +61,6 @@ MAQUINA_VEICULO = (
 	(True, 'Veiculo')
 )
 
-
 class Veiculo(models.Model):
 	placa = models.CharField(verbose_name="Placa/Codigo Interno",max_length=30,primary_key=True)
 	

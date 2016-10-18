@@ -26,6 +26,4 @@ urlpatterns = [
     url(r'^labels_available/', labels_available),
     url(r'^labels_favorites/', labels_favorites),
     url(r'^update_labels_favorites/', update_labels_favorites)
-
-
 ]

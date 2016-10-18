@@ -10,24 +10,17 @@ from urlparse import urlparse, parse_qs
 import time
 from django.db import transaction
 
-
 def home(request):
 	"""
 	home page
 	"""
-
 	# data = simplejson.dumps(some_data_to_dump)
 	std = request.GET.get('std', False)
 	placas = request.GET.get('placas', None)
-	if placas:
-		placas = placas.split(',')
-	else:
-		placas = []
 	date_months = request.GET.get('monthsago', 12)
-	date_range = request.GET.get('date_range', 12)
+	date_range = request.GET.get('date_range', "01/07/2016 - 01/10/2016")
 	date_str_start,date_str_end = date_range.replace(" ","").split('-')
 	start_date , end_date = datetime.strptime(date_str_start, '%d/%m/%Y'),datetime.strptime(date_str_end, '%d/%m/%Y')
-	print start_date , end_date 
 	if date_months:
 		date_months = int(date_months)
 	# data2 = serializers.serialize('json', some_data_to_dump)
@@ -35,19 +28,22 @@ def home(request):
 	end = datetime.today()
 	new_start = start + timedelta(days=-1*date_months * 365/12) #day can be negative
 	#placas
-	if len(placas)==0:
-		placas = [ i for (i,) in Abastecimento.objects.filter(hodometro__gte=0,criado_date__range=[start_date, end_date]).values_list('veiculo__placa').distinct()]
-	
+	if placas:
+		placas = placas.split(',')
+		placas = Veiculo.objects.filter(placa__in=placas).values_list('placa','isVeiculo').distinct()
+	else:
+		placas = []
+		placas = Abastecimento.objects.filter(hodometro__gt=0,criado_date__range=[start_date, end_date]).values_list('veiculo__placa','veiculo__isVeiculo').distinct()
 	finalarray = []
+	finalarrayPivot = []
 	veiculos_litros = {}
 	veiculos_diff = {}
-
+	dates = []
 	if len(placas)>0:
-		dates =  map(lambda (x,):x.strftime("%Y/%m/%d"),Abastecimento.objects.filter(veiculo__placa__in=placas,criado_date__range=[start_date, end_date]).order_by('criado_date').values_list('criado_date').distinct())
+		dates =  map(lambda (x,):x.strftime("%Y/%m/%d"),Abastecimento.objects.filter(veiculo__placa__in=map(lambda (x,y):x,placas),criado_date__range=[start_date, end_date]).order_by('criado_date').values_list('criado_date').distinct())
 		veiculos_data = {}
 		veiculos_consumption = {}
-
-		for pl in placas:
+		for pl,isveiculo in placas:
 			veiculos_data[pl] =   Abastecimento.objects.filter(veiculo__placa=pl,criado_date__range=[start_date, end_date]).order_by('criado_date').values('hodometro','criado_date','quantidade')
 			consumption = {}
 			litros = {}
@@ -67,7 +63,6 @@ def home(request):
 			veiculos_consumption[pl] = consumption
 			veiculos_litros[pl] = litros
 			veiculos_diff[pl] = diffs
-
 			# if std:
 			# 	if len(consumption_datavalues)>1:
 			# 		std_value = pstdev(consumption_datavalues)
@@ -78,22 +73,39 @@ def home(request):
 			# 		consumption_data_data = [[data_criado,[dif,std_value]] for data_criado,dif,litros in consumption]
 			# 	else:
 			# 		consumption_data_data = [[data_criado,dif] for data_criado,dif,litros in consumption]
-
 		for i,date_val in enumerate(dates):
 			finalarray.append([date_val])
-			for pl in placas:
+			for pl,isveiculo in placas:
 				finalarray[i].append(veiculos_consumption[pl].get(date_val,None))
+
+		for i,(pl,isveiculo) in enumerate(placas):
+			finalarrayPivotElement = {}
+			finalarrayPivotElement['nome'] = pl
+			dataformeanhomometro = []
+			dataformeanlitros = []
+			for i,date_val in enumerate(dates):
+				dataformeanhomometro.append(veiculos_consumption[pl].get(date_val,0))
+				dataformeanlitros.append(veiculos_litros[pl].get(date_val,0))
+				formatedOut = ''
+				output = (veiculos_consumption[pl].get(date_val,None),veiculos_litros[pl].get(date_val,None))
+				if not (None,None)== output:
+					formatedOut =  (str(veiculos_consumption[pl].get(date_val,None))+'km' if isveiculo else 'Hr',str(veiculos_litros[pl].get(date_val,None))+'litros')
+				finalarrayPivotElement[date_val] = formatedOut
+			finalarrayPivotElement['media'] = str(mean(dataformeanhomometro))+'km' if isveiculo else 'Hr'
+			finalarrayPivotElement['consumo'] = str(consumo(dataformeanhomometro,dataformeanlitros,isveiculo))+'km/litro' if isveiculo else 'litro/Hr'
+			finalarrayPivot.append(finalarrayPivotElement)
 
 	# print query
 	consumption_data = {}
-	consumption_data['data'] = finalarray
+	consumption_data['data'] = finalarrayPivot
+	consumption_data['dates'] = dates
+	consumption_data['datapivot'] = finalarray
 	consumption_data['litros'] = veiculos_litros
 	consumption_data['diffs'] = veiculos_diff
-	consumption_data['labels'] = placas
-
+	consumption_data['labels'] = map(lambda (x,y):x,placas)
 	data4 =		json.dumps(consumption_data)
-
 	return HttpResponse(data4, content_type='application/json')
+
 
 def labels_available(request):
 
@@ -123,12 +135,22 @@ def update_labels_favorites(request):
 
 	return HttpResponse(data4, content_type='application/json')
 
+
+def consumo(data,litros,isveiculo=True):
+	if len(data)<=0:
+		return 0
+	if isveiculo:
+		return sum(data)/sum(litros,000.1)
+	else:
+		return sum(litros)/sum(data,000.1)
+
 def mean(data):
     """Return the sample arithmetic mean of data."""
     n = len(data)
-    if n < 1:
-        raise ValueError('mean requires at least one data point')
-    return sum(data)/n # in Python 2 use sum(data)/float(n)
+    if n <= 0:
+        return 0
+    else:
+    	return sum(data)/n # in Python 2 use sum(data)/float(n)
 
 def _ss(data):
     """Return sum of square deviations of sequence data."""
