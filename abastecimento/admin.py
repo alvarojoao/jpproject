@@ -21,6 +21,8 @@ from django.utils.translation import ugettext_lazy as _
 # 	search_fields = ['username']
 
 # admin.site.register(Responsavel, ResponsavelAdmin)
+admin.site.site_title = 'Ancar Modulo Administrativo'
+admin.site.site_header = 'Ancar Admin'
 
 class AbastecimentoResource(resources.ModelResource):
 	def __str__(self):
