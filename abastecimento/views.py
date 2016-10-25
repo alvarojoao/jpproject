@@ -91,10 +91,10 @@ def home(request):
 				formatedOut = ''
 				output = (veiculos_consumption[pl].get(date_val,None),veiculos_litros[pl].get(date_val,None))
 				if not (None,None)== output:
-					formatedOut =  (str(veiculos_consumption[pl].get(date_val,None))+'km' if isveiculo else 'Hr',str(veiculos_litros[pl].get(date_val,None))+'litros')
+					formatedOut =  (str(veiculos_consumption[pl].get(date_val,None))+('km' if isveiculo else 'Hr'),str(veiculos_litros[pl].get(date_val,None))+'litros')
 				finalarrayPivotElement[date_val] = formatedOut
-			finalarrayPivotElement['media'] = str(mean(dataformeanhomometro))+'km' if isveiculo else 'Hr'
-			finalarrayPivotElement['consumo'] = str(consumo(dataformeanhomometro,dataformeanlitros,isveiculo))+'km/litro' if isveiculo else 'litro/Hr'
+			finalarrayPivotElement['media'] = str(mean(dataformeanhomometro))+(' km' if isveiculo else ' Hr')
+			finalarrayPivotElement['consumo'] = str(consumo(dataformeanhomometro,dataformeanlitros,isveiculo))+('km/litro' if isveiculo else 'litro/Hr')
 			finalarrayPivot.append(finalarrayPivotElement)
 
 	# print query
