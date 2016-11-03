@@ -52,6 +52,7 @@ class Posto(models.Model):
 
 TIPO_VEICULOS = (
 	('PROPRIO', 'Frota própria'),
+	('PROPRIO-SEM', 'Próprio sem horímetro / odômetro'),
 	('TERCEIRO-SEM', 'Terceirizados sem o desconto de combustível na medição'),
 	('TERCEIRO-COM', 'Terceirizados com desconto do combustível na medição')
 )
