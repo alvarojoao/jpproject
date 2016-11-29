@@ -16,6 +16,11 @@ from abastecimento.models import Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
+from django.conf.urls import patterns
+from django.contrib import admin
+from django.http import HttpResponse
+
+
 # class ResponsavelAdmin(UserAdmin):
 
 # 	search_fields = ['username']
@@ -23,6 +28,8 @@ from django.utils.translation import ugettext_lazy as _
 # admin.site.register(Responsavel, ResponsavelAdmin)
 admin.site.site_title = 'Ancar Modulo Administrativo'
 admin.site.site_header = 'Ancar Admin'
+
+
 
 class AbastecimentoResource(resources.ModelResource):
 	def __str__(self):

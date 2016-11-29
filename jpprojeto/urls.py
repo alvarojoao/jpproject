@@ -17,8 +17,23 @@ from django.conf.urls import url, include
 from django.conf.urls import url
 from django.contrib import admin
 from abastecimento.views import home,labels_available,labels_favorites,update_labels_favorites
-
+from django.conf.urls import patterns
+from django.contrib import admin
+from django.http import HttpResponse
 admin.autodiscover()
+def my_view(request):
+    return HttpResponse("Hello!")
+
+def get_admin_urls(urls):
+    def get_urls():
+        my_urls = patterns('',
+            (r'^my_view/$', admin.site.admin_view(my_view))
+        )
+        return my_urls + urls
+    return get_urls
+
+admin_urls = get_admin_urls(admin.site.get_urls())
+admin.site.get_urls = admin_urls
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -27,3 +42,4 @@ urlpatterns = [
     url(r'^labels_favorites/', labels_favorites),
     url(r'^update_labels_favorites/', update_labels_favorites)
 ]
+

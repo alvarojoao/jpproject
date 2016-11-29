@@ -14,141 +14,130 @@ from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
 )
 
+
+def validate_hodometro_and_veiculo_type(value):
+	if value <0 :
+		raise ValidationError(
+			_('Esse campo não pode ter valor %(value)s, o campo deve ter valor maior ou igual a zero'),
+			params={'value': value},
+		)
+
+
 # class Responsavel(User):
 
 # 	def __str__(self):              # __unicode__ on Python 2
 # 		return self.username
-class tipo(models.Model):
+
+class Tipo(models.Model):
 	codigo = models.CharField(max_length=200,primary_key=True)
-	descricao = models.CharField(max_length=200,primary_key=True)
-	unidade = models.CharField(max_length=200,primary_key=True)
-
-class familia(models.Model):
-	codigo = models.CharField(max_length=200,primary_key=True)
-	tipo = models.CharField(max_length=200,primary_key=True)
-	nome = models.CharField(max_length=200,primary_key=True)
-	descricao = models.CharField(max_length=200,primary_key=True)
-	quantidadeDiaria = models.CharField(max_length=200,primary_key=True)
-	quantidadeDiaria = models.CharField(max_length=200,primary_key=True)
-
-class marca(models.Model):
-	codigo = models.CharField(max_length=200,primary_key=True)
-	descricao = models.CharField(max_length=200,primary_key=True)
-
-class modelo(models.Model):
-	codigo = models.CharField(max_length=200,primary_key=True)
-	marca = models.CharField(max_length=200,primary_key=True)
-	descricao = models.CharField(max_length=200,primary_key=True)
-	unidade = models.CharField(max_length=200,primary_key=True)
-
-class cor(models.Model):
-	codigo = models.CharField(max_length=200,primary_key=True)
-	cor = models.CharField(max_length=200,primary_key=True)
-
-class eixo(models.Model):
-	codigo = models.CharField(max_length=200,primary_key=True)
-	descricao = models.CharField(max_length=200,primary_key=True)
-	numeroPneus = models.CharField(max_length=200,primary_key=True)
-
-class grupo(models.Model):
-	pass
-
-class ItemManutencao(models.Model):
-	codigo = models.CharField(max_length=200,primary_key=True)
-	grupo = models.CharField(max_length=200,primary_key=True)
-	descricao = models.CharField(max_length=200,primary_key=True)
-	material = models.CharField(max_length=200,primary_key=True)
-	tempoServico = models.CharField(max_length=200,primary_key=True)
-	criado_date = models.DateField("Data Criada", auto_now_add=True)
-	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
-
-class ItemManutencaoVeiculo(models.Model):
-	ItemManutencao = models.CharField(max_length=200,primary_key=True)
-	descricao = models.CharField(max_length=200,primary_key=True)
-	material = models.CharField(max_length=200,primary_key=True)
-	periodoPadrao = models.CharField(max_length=200,primary_key=True)
-	quantidade = models.CharField(max_length=200,primary_key=True)
-	unidade = models.CharField(max_length=200,primary_key=True)
-	tempoServico = models.CharField(max_length=200,primary_key=True)
-	criado_date = models.DateField("Data Criada", auto_now_add=True)
-	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
-
-
-class ItemManutencaoProgramado(models.model):
-	ItemManutencaoVeiculo = models.CharField(max_length=200,primary_key=True)
-	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [validate_hodometro_and_veiculo_type])
-
-	criado_date = models.DateField("Data Criada", auto_now_add=True)
-	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
-
-
-class ItemManutencaoNaoProgramado(models.model):
-	ItemManutencao = models.CharField(max_length=200,primary_key=True)
-	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [validate_hodometro_and_veiculo_type])
-
-	criado_date = models.DateField("Data Criada", auto_now_add=True)
-	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
-
-class Fornecedor(models.Model):
-	codigo = models.CharField(max_length=200,primary_key=True)
-	razaoSocial = models.CharField(max_length=200,primary_key=True)
-	nomeFantasia = models.CharField(max_length=200,primary_key=True)
-	cnpj = models.CharField(max_length=20,blank=True, null=True)
-	endereco = models.CharField(max_length=20,blank=True, null=True)
-	conceito = models.CharField(max_length=20,blank=True, null=True)
-	observacao = models.TextField( blank=True, null=True)
-	
-	criado_date = models.DateField("Data Criada",
-	        auto_now_add=True)
-	atualizado_date = models.DateTimeField("Data Atualizado",
-	        blank=True, null=True,auto_now=True)
-
+	descricao = models.CharField(max_length=200)
+	unidade = models.CharField(max_length=200)
 	def __str__(self):
-		return self.nome+' - cnpj: '+(str(self.cnpj) if self.cnpj else 'Nao Tem')
+		return self.codigo+'-'+self.unidade
 
-class Locacao(models.Model):
-
-	obra = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
-	hodometroInicial = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [validate_hodometro_and_veiculo_type])
-	hodometroFinal = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [validate_hodometro_and_veiculo_type])
-	horasprodutivo = models.CharField(max_length=200,primary_key=True)
-	horasmanutencaoPreventiva = models.CharField(max_length=200,primary_key=True)
-	horasmanutencaoCorretiva = models.CharField(max_length=200,primary_key=True)
-	observacao = models.TextField( blank=True, null=True)
-
-	criado_date = models.DateField("Data Criada",
-	        auto_now_add=True)
-	atualizado_date = models.DateTimeField("Data Atualizado",
-	        blank=True, null=True,auto_now=True)
-
-class componente(model.Models):
+class Familia(models.Model):
 	codigo = models.CharField(max_length=200,primary_key=True)
+	tipo = models.CharField(max_length=200)
+	nome = models.CharField(max_length=200)
+	descricao = models.CharField(max_length=200)
+	quantidadeDiaria = models.CharField(max_length=200)
+	def __str__(self):
+		return self.codigo
+
+class Marca(models.Model):
 	nome = models.CharField(max_length=200,primary_key=True)
-
-#orcamento
-class custo(model.Models):
-	veiculo = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
-	notafiscal = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
-	data_emissao = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
-	componente = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
-	valor = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
-	fornecedor = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
-	
-	criado_date = models.DateField("Data Criada",
-	        auto_now_add=True)
-	atualizado_date = models.DateTimeField("Data Atualizado",
-	        blank=True, null=True,auto_now=True)
-
-
-class Obra(models.Model):
-	nome = models.CharField(max_length=200,primary_key=True)
-	status = models.CharField(max_length=200,primary_key=True)
-	sairnaagenda = models.CharField(max_length=200,primary_key=True)
-	criado_date = models.DateField("Data Criada", auto_now_add=True)
-	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
-
+	descricao = models.CharField(max_length=200)
 	def __str__(self):
 		return self.nome
+
+UNIDADE_VEICULO = (
+	('Km', 'Hodometro'),
+	('Hr', 'Horimetro')
+)
+
+class Modelo(models.Model):
+	nome = models.CharField(max_length=200,primary_key=True)
+	marca = models.ForeignKey(Marca,null=True)
+	descricao = models.CharField(max_length=200)
+	unidade = models.CharField(max_length=3, choices=UNIDADE_VEICULO,blank=True, null=True)
+	def __str__(self):
+		return self.nome
+
+class Cor(models.Model):
+	cor = models.CharField(max_length=200)
+	def __str__(self):
+		return self.cor
+
+class Eixo(models.Model):
+	descricao = models.CharField(max_length=200)
+	numeroPneus = models.IntegerField('Número de Pneus',default=0)
+	def __str__(self):
+		return self.numeroPneus
+
+class Grupo(models.Model):
+	nome = models.CharField(max_length=100)
+	def __str__(self):
+		return nome
+
+class ItemManutencao(models.Model):
+	grupo = models.ForeignKey(Grupo)
+	descricao = models.CharField(max_length=200)
+	material = models.CharField(max_length=200)
+	tempoServico = models.IntegerField('Tempo em Horas',default=0)
+	criado_date = models.DateField("Data Criada", auto_now_add=True)
+	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
+	def __str__(self):
+		return self.material
+
+class ItemManutencaoVeiculo(models.Model):
+	ItemManutencao = models.ForeignKey(ItemManutencao)
+	descricao = models.CharField(max_length=200)
+	material = models.CharField(max_length=200)
+	periodoPadrao = models.IntegerField('Horas ou Kilometros para cada troca',default=0)
+	quantidade = models.IntegerField('Quantidade necessaria para troca',default=0)
+	unidade = models.CharField(max_length=3, choices=UNIDADE_VEICULO,blank=True, null=True)
+	tempoServico = models.IntegerField('Tempo de servico total',default=0)
+	criado_date = models.DateField("Data Criada", auto_now_add=True)
+	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
+	def __str__(self):
+		return str(self.periodoPadrao)
+
+
+
+
+# class Locacao(models.Model):
+
+# 	obra = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
+# 	hodometroInicial = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [validate_hodometro_and_veiculo_type])
+# 	hodometroFinal = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [validate_hodometro_and_veiculo_type])
+# 	horasprodutivo = models.CharField(max_length=200,primary_key=True)
+# 	horasmanutencaoPreventiva = models.CharField(max_length=200,primary_key=True)
+# 	horasmanutencaoCorretiva = models.CharField(max_length=200,primary_key=True)
+# 	observacao = models.TextField( blank=True, null=True)
+
+# 	criado_date = models.DateField("Data Criada",
+# 	        auto_now_add=True)
+# 	atualizado_date = models.DateTimeField("Data Atualizado",
+# 	        blank=True, null=True,auto_now=True)
+
+# class componente(models.Model):
+# 	codigo = models.CharField(max_length=200,primary_key=True)
+# 	nome = models.CharField(max_length=200,primary_key=True)
+
+# #orcamento
+# class custo(models.Model):
+# 	veiculo = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
+# 	notafiscal = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
+# 	data_emissao = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
+# 	componente = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
+# 	valor = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
+# 	fornecedor = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
+	
+# 	criado_date = models.DateField("Data Criada",
+# 	        auto_now_add=True)
+# 	atualizado_date = models.DateTimeField("Data Atualizado",
+# 	        blank=True, null=True,auto_now=True)
+
 
 
 class Operador(models.Model):
@@ -184,6 +173,34 @@ MAQUINA_VEICULO = (
 	(True, 'Veiculo')
 )
 
+class Obra(models.Model):
+	nome = models.CharField(max_length=200,primary_key=True)
+	status = models.CharField(max_length=200,primary_key=False,default=False)
+	sairnaagenda = models.CharField(max_length=200,primary_key=False,default=False)
+	criado_date = models.DateField("Data Criada", auto_now_add=True)
+	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
+
+	def __str__(self):
+		return self.nome
+
+
+class Fornecedor(models.Model):
+	codigo = models.CharField(max_length=200,primary_key=True)
+	razaoSocial = models.CharField(max_length=200)
+	nomeFantasia = models.CharField(max_length=200)
+	cnpj = models.CharField(max_length=20,blank=True, null=True)
+	endereco = models.CharField(max_length=20,blank=True, null=True)
+	conceito = models.CharField(max_length=20,blank=True, null=True)
+	observacao = models.TextField( blank=True, null=True)
+	
+	criado_date = models.DateField("Data Criada",
+	        auto_now_add=True)
+	atualizado_date = models.DateTimeField("Data Atualizado",
+	        blank=True, null=True,auto_now=True)
+
+	def __str__(self):
+		return self.nome+' - cnpj: '+(str(self.cnpj) if self.cnpj else 'Nao Tem')
+
 class Veiculo(models.Model):
 	placa = models.CharField(verbose_name="Placa/Codigo Interno",max_length=30,primary_key=True)
 	
@@ -191,6 +208,8 @@ class Veiculo(models.Model):
 	isVeiculo = models.BooleanField(choices=MAQUINA_VEICULO,default=True,blank=False, null=False,verbose_name="Veiculo/Maquina ")
 	observacao = models.TextField( blank=True, null=True)
 	favorito = models.BooleanField(verbose_name="Favorito no grafico",default=False)
+	itensManutencao = models.ManyToManyField(ItemManutencaoVeiculo)
+
 	criado_date = models.DateField("Data Criada",
 	        auto_now_add=True)
 	atualizado_date = models.DateTimeField("Data Atualizado",
@@ -199,6 +218,23 @@ class Veiculo(models.Model):
 	def __str__(self):
 		return unicode(self.placa)+' - TIPO: '+str(self.tipo)
 
+class ItemManutencaoProgramado(models.Model):
+	ItemManutencaoVeiculo = models.ForeignKey(ItemManutencaoVeiculo)
+	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
+	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
+	criado_date = models.DateField("Data Criada", auto_now_add=True)
+	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
+	def __str__(self):
+		return str(self.veiculo)
+
+class ItemManutencaoNaoProgramado(models.Model):
+	ItemManutencao = models.ForeignKey(ItemManutencao)
+	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
+	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
+	criado_date = models.DateField("Data Criada", auto_now_add=True)
+	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
+	def __str__(self):
+		return str(self.veiculo)
 
 TIPOS_COMBUSTIVEL = (
 	('DS5', 'DS5'),
@@ -210,12 +246,6 @@ TIPOS_COMBUSTIVEL = (
 	('LUB', 'LUB'),
 )
 
-def validate_hodometro_and_veiculo_type(value):
-	if value <0 :
-		raise ValidationError(
-			_('Esse campo não pode ter valor %(value)s, o campo deve ter valor maior ou igual a zero'),
-			params={'value': value},
-		)
 
 
 class Abastecimento(models.Model):
