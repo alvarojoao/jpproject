@@ -136,7 +136,7 @@ class AbastecimentoAdmin(ImportExportMixin, admin.ModelAdmin):
 
 	list_display = ('id','criado_date','notafiscal','hodometro','quantidade','valor_display','vale', 'responsavel_display','veiculo')
 	search_fields = ['notafiscal', 'veiculo__placa','responsavel__username','posto__nome','observacao']
-	list_filter = ('criado_date','obra','responsavel','veiculo')
+	list_filter = ('criado_date','posto','obra','responsavel','veiculo')
 	# readonly_fields=('vale','motorista','responsavel','veiculo','posto')
 	def save_model(self, request, obj, form, change):
 		if not request.user.is_superuser:
