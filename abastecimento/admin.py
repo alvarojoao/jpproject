@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 
 # Register your models here.
 from django.db import transaction
-from abastecimento.models import Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS
+from abastecimento.models import Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS,ItemManutencao,ItemManutencaoVeiculo,Locacao
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
@@ -29,6 +29,22 @@ from django.http import HttpResponse
 admin.site.site_title = 'Ancar Modulo Administrativo'
 admin.site.site_header = 'Ancar Admin'
 
+class ItemManutencaoAdmin(admin.ModelAdmin):
+	pass
+
+admin.site.register(ItemManutencao, ItemManutencaoAdmin)
+
+
+class ItemManutencaoVeiculoAdmin(admin.ModelAdmin):
+	pass
+
+admin.site.register(ItemManutencaoVeiculo, ItemManutencaoVeiculoAdmin)
+
+
+class LocacaoAdmin(admin.ModelAdmin):
+	pass
+
+admin.site.register(Locacao, LocacaoAdmin)
 
 
 class AbastecimentoResource(resources.ModelResource):
@@ -110,7 +126,8 @@ class OperadorAdmin(admin.ModelAdmin):
 admin.site.register(Operador, OperadorAdmin)
 
 class ObraAdmin(admin.ModelAdmin):
-	pass
+	radio_fields = {"status": admin.VERTICAL,"sairnaagenda": admin.VERTICAL}
+
 
 
 admin.site.register(Obra, ObraAdmin)
