@@ -202,6 +202,7 @@ class Veiculo(models.Model):
 	observacao = models.TextField( blank=True, null=True)
 	favorito = models.BooleanField(verbose_name="Favorito no grafico",default=False)
 	itensManutencao = models.ManyToManyField(ItemManutencaoVeiculo,null=True,blank=True)
+	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
 
 	criado_date = models.DateField("Data Criada",
 	        auto_now_add=True)
@@ -295,10 +296,10 @@ class Locacao(models.Model):
 	horasmanutencaoCorretiva = models.IntegerField('Horas Manutenção corretiva',default=0,validators=[MinValueValidator(0),
                                        MaxValueValidator(8)])
 	observacao = models.TextField( blank=True, null=True)
-	data_inicio = models.DateField("Data Inicio",
-	        auto_now_add=True)
-	data_fim = models.DateField("Data Fim",
-	        auto_now_add=True)
+	data_inicio = models.DateField("Data Inicio"
+	        )
+	data_fim = models.DateField("Data Fim"
+	        )
 
 	criado_date = models.DateField("Data Criada",
 	        auto_now_add=True)

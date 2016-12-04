@@ -115,6 +115,10 @@ def labels_available(request):
 	data4 =		json.dumps(placas)
 	return HttpResponse(data4, content_type='application/json')
 
+@login_required
+def get_veiculo_km(request,id):
+	veiculo = Veiculo.objects.get(pk=id)
+	return HttpResponse(json.dumps({'hodometro':veiculo.hodometro}), content_type='application/json')
 
 
 @login_required
