@@ -44,6 +44,10 @@ INSTALLED_APPS = [
     'abastecimento.apps.AbastecimentoConfig',
     'django_nvd3',
     'djangobower',
+    'filer',
+    'mptt',
+    'easy_thumbnails',
+    'calendarium',
 ]
 
 # Django-bower

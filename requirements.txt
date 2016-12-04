@@ -16,3 +16,4 @@ django-admin-tools-stats==0.7.1
 django-import-export==0.5.1
 django-autocomplete-light==3.2.0
 tablib
+django-calendarium
