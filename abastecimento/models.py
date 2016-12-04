@@ -14,6 +14,7 @@ from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
 )
 
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 def validate_hodometro_and_veiculo_type(value):
 	if value <0 :
@@ -104,25 +105,11 @@ class ItemManutencaoVeiculo(models.Model):
 
 
 
-
-# class Locacao(models.Model):
-
-# 	obra = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
-# 	hodometroInicial = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [validate_hodometro_and_veiculo_type])
-# 	hodometroFinal = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [validate_hodometro_and_veiculo_type])
-# 	horasprodutivo = models.CharField(max_length=200,primary_key=True)
-# 	horasmanutencaoPreventiva = models.CharField(max_length=200,primary_key=True)
-# 	horasmanutencaoCorretiva = models.CharField(max_length=200,primary_key=True)
-# 	observacao = models.TextField( blank=True, null=True)
-
-# 	criado_date = models.DateField("Data Criada",
-# 	        auto_now_add=True)
-# 	atualizado_date = models.DateTimeField("Data Atualizado",
-# 	        blank=True, null=True,auto_now=True)
-
 # class componente(models.Model):
 # 	codigo = models.CharField(max_length=200,primary_key=True)
 # 	nome = models.CharField(max_length=200,primary_key=True)
+
+
 
 # #orcamento
 # class custo(models.Model):
@@ -173,10 +160,16 @@ MAQUINA_VEICULO = (
 	(True, 'Veiculo')
 )
 
+SIM_NAO = (
+	(False, 'Não'),
+	(True, 'Sim')
+)
+
 class Obra(models.Model):
 	nome = models.CharField(max_length=200,primary_key=True)
-	status = models.CharField(max_length=200,primary_key=False,default=False)
-	sairnaagenda = models.CharField(max_length=200,primary_key=False,default=False)
+	status = models.BooleanField('Status',choices=SIM_NAO,default=False,blank=False, null=False)
+	sairnaagenda = models.BooleanField('Sair na Agenda',choices=SIM_NAO,default=False,blank=False, null=False)
+
 	criado_date = models.DateField("Data Criada", auto_now_add=True)
 	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
 
@@ -208,7 +201,7 @@ class Veiculo(models.Model):
 	isVeiculo = models.BooleanField(choices=MAQUINA_VEICULO,default=True,blank=False, null=False,verbose_name="Veiculo/Maquina ")
 	observacao = models.TextField( blank=True, null=True)
 	favorito = models.BooleanField(verbose_name="Favorito no grafico",default=False)
-	itensManutencao = models.ManyToManyField(ItemManutencaoVeiculo)
+	itensManutencao = models.ManyToManyField(ItemManutencaoVeiculo,null=True,blank=True)
 
 	criado_date = models.DateField("Data Criada",
 	        auto_now_add=True)
@@ -284,3 +277,31 @@ class Abastecimento(models.Model):
 		# but a decimal field will display itself correctly
 		# so we can just do this:
 		return self.responsavel.username
+
+
+
+
+
+class Locacao(models.Model):
+
+	obra = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
+	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
+	hodometroInicial = models.IntegerField('Hodômetro/Horimetro Inicial',default=0,validators= [validate_hodometro_and_veiculo_type])
+	hodometroFinal = models.IntegerField('Hodômetro/Horimetro Final',default=0,validators= [validate_hodometro_and_veiculo_type])
+	horasprodutivo = models.IntegerField('Horas produtivas',default=8,validators=[MinValueValidator(0),
+                                       MaxValueValidator(8)])
+	horasmanutencaoPreventiva = models.IntegerField('Horas Manutenção preventiva',default=0,validators=[MinValueValidator(0),
+                                       MaxValueValidator(8)])
+	horasmanutencaoCorretiva = models.IntegerField('Horas Manutenção corretiva',default=0,validators=[MinValueValidator(0),
+                                       MaxValueValidator(8)])
+	observacao = models.TextField( blank=True, null=True)
+	data_inicio = models.DateField("Data Inicio",
+	        auto_now_add=True)
+	data_fim = models.DateField("Data Fim",
+	        auto_now_add=True)
+
+	criado_date = models.DateField("Data Criada",
+	        auto_now_add=True)
+	atualizado_date = models.DateTimeField("Data Atualizado",
+	        blank=True, null=True,auto_now=True)
+
