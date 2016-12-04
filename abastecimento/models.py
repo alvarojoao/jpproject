@@ -305,4 +305,6 @@ class Locacao(models.Model):
 	        auto_now_add=True)
 	atualizado_date = models.DateTimeField("Data Atualizado",
 	        blank=True, null=True,auto_now=True)
+	def title(self):
+		return str(self.veiculo)+' '+str(self.obra)+' HorasProdutivas:'+str(self.horasprodutivo-self.horasmanutencaoPreventiva-self.horasmanutencaoCorretiva)
 

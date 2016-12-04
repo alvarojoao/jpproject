@@ -28,6 +28,8 @@ from django import forms
 from django.shortcuts import redirect
 import datetime
 
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
+
 admin.autodiscover()
 from django import template
 
@@ -71,6 +73,14 @@ def save_locacao(request,id):
 
     return redirect('/admin/my_view/')
 
+@csrf_exempt
+def delete_locacao(request,id):
+    if id is not None:
+        locacao = Locacao.objects.get(pk=id)  # if this is an edit form, replace the author instance with the existing one
+        if locacao and request.method=='POST':
+            locacao.delete()
+
+    return redirect('/admin/my_view/')
 
 def load_locacao(request,id):
     if id is not None:
@@ -85,6 +95,7 @@ def get_admin_urls(urls):
         my_urls = patterns('',
             (r'^my_view/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(my_view)),
             (r'^my_view/save_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(save_locacao)),
+            (r'^my_view/delete_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(delete_locacao)),
             (r'^my_view/load_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(load_locacao))
         )
         return my_urls + urls

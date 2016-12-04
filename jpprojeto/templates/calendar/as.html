@@ -14,6 +14,7 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.0/locale/pt-br.js"></script>
+  <script src="https://fullcalendar.io/js/fullcalendar-3.0.1/locale-all.js"></script>
 
 	{{formset.media}}
 <style>
@@ -36,22 +37,21 @@
 
 	<div id='calendar'></div>
 
-	<!-- Trigger the modal with a button -->
-	<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Small Modal</button>
-
-	<!-- Modal -->
 	<!-- Modal -->
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Modal title 
+        <h4 class="modal-title" id="myModalLabel">Locacao 
         <span id="start" class="label label-info"></span>
 		<span id="end" class="label label-info"></span>
 		</h4>
       </div>
+	<input type="hidden" id='locacal_id' name="locacal_id">
+
 	<form method="POST" action="./save_locacao/">
+	<button type="button" id="delteBtn" class="btn btn-danger">Deletar</button>
       <div class="modal-body">
             {% csrf_token %}
             <div class="form-content">
@@ -61,8 +61,30 @@
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary">Save changes</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+	</form>       
+    </div>
+  </div>
+  </div>
+  	<!-- Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Deletar Locacao?
+		</h4>
+      </div>
+	<form method="POST" action="./delete_locacao/">
+      <div class="modal-body">
+            {% csrf_token %}
+      	
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+        <button type="submit" class="btn btn-primary">Remover</button>
       </div>
 	</form>       
     </div>
@@ -74,13 +96,19 @@
 <script>
 
 	$(document).ready(function() {
-		
+		$('#delteBtn').bind('click',function(e){
+
+            $('#deleteModal form').attr('action','./delete_locacao/'+$('#locacal_id').val()+'')
+            $('#deleteModal .modal-body').html('<p> Teste locacao detalhes</p>')
+			$('#deleteModal').modal('show');
+		})
 		$('#calendar').fullCalendar({
 			locale: 'pt-br',
+
 			header: {
 				left: 'prev,next today',
 				center: 'title',
-				right: 'month,agendaWeek,agendaDay'
+				right: 'month,agendaWeek,agendaDay,listMonth'
 			},
 			// defaultDate: '2016-09-12',
 			navLinks: true, // can click day/week names to navigate views
@@ -94,10 +122,12 @@
 			            "cache"    : false,
 			            "success"  : function(form) {
 			                $('#myModal .modal-body .form-content').html(form);
-			                $('form').attr('action','./save_locacao/'+calEvent.id+'')
+			                $('#myModal form').attr('action','./save_locacao/'+calEvent.id+'')
 
 							$('#myModal').modal('show');
 							$("#myModal #start").html(calEvent.start.format("DD/MM/YYYY"))
+							$('#delteBtn').show()
+							$('#locacal_id').val(calEvent.id)
 							if(calEvent.end)
 								$("#myModal #end").html(calEvent.end.subtract(1,'days').format("DD/MM/YYYY"))
 							else
@@ -123,27 +153,16 @@
 			            "cache"    : false,
 			            "success"  : function(form) {
 			                $('#myModal .modal-body .form-content').html(form);
-			                $('form').attr('action','./save_locacao/')
+			                $('#myModal form').attr('action','./save_locacao/')
 
 						    $('#id_data_inicio').val($("#myModal #start").text())
 						    $('#id_data_fim').val($("#myModal #end").text())
+							$('#delteBtn').hide()
 							$('#myModal').modal('show');
+
 
 			            }           
 			    });
-				// $('#myModal').on('hidden.bs.modal', function (e) {
-  		// 			// do something...
-  		// 			console.log(e);
-				// 	var eventData;
-				// 	if (title) {
-				// 		eventData = {
-				// 			title: title,
-				// 			start: start,
-				// 			end: end
-				// 		};
-				// 		$('#calendar').fullCalendar('renderEvent', eventData, true); // stick? = true
-				// 	}
-				// });
 
 				$('#calendar').fullCalendar('unselect');
 
@@ -155,7 +174,7 @@
 				{% for locacao in locacaos %}
 				{
 					id: '{{locacao.id}}',
-					title: '{{locacao.id}}',
+					title: '{{locacao.title}}',
 					start: "{{locacao.data_inicio|date:'Y-m-d'}}",
 					end: "{{locacao.data_fim|addOneDay|date:'Y-m-d'}}",
 					allDay:true

@@ -7,3 +7,4 @@ register = template.Library()
 @register.filter(name='addOneDay')
 def addOneDay(value):
     return value+datetime.timedelta(days=1)
+
