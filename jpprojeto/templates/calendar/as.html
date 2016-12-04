@@ -51,19 +51,25 @@
 		<span id="end" class="label label-info"></span>
 		</h4>
       </div>
-		<form method="POST" action="./save_locacao/">
+	<form method="POST" action="./save_locacao/">
       <div class="modal-body">
             {% csrf_token %}
+            <div class="form-content">
+            	
 			{{ formset.as_p }}
+            </div>
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         <button type="submit" class="btn btn-primary">Save changes</button>
-		</form>       
       </div>
+	</form>       
     </div>
   </div>
+  </div>
 </body>
+{% load app_filters %}
 
 <script>
 
@@ -81,12 +87,25 @@
 			selectable: true,
 			selectHelper: true,
 			eventClick: function(calEvent, jsEvent, view) {
+				$.ajax({
+			            "type"     : "GET",
+			            "url"      : "./load_locacao/"+calEvent.id,
+			            "dataType" : "html",
+			            "cache"    : false,
+			            "success"  : function(form) {
+			                $('#myModal .modal-body .form-content').html(form);
+			                $('form').attr('action','./save_locacao/'+calEvent.id+'')
 
-				$("#myModal #start").html(calEvent.start.format("DD/MM/YYYY"))
-				if(calEvent.end)
-					$("#myModal #end").html(calEvent.end.subtract(1,'days').format("DD/MM/YYYY"))
-				$('#myModal').modal('show');
+							$('#myModal').modal('show');
+							$("#myModal #start").html(calEvent.start.format("DD/MM/YYYY"))
+							if(calEvent.end)
+								$("#myModal #end").html(calEvent.end.subtract(1,'days').format("DD/MM/YYYY"))
+							else
+								$("#myModal #end").html('')
 
+			            }           
+			    });
+				
 		        // change the border color just for fun
 		        $(this).css('border-color', 'red');
 
@@ -97,22 +116,34 @@
 				$("#myModal #end").html(end.subtract(1,'days').format("DD/MM/YYYY"))
 				$('#myModal').modal('show');
 
-			    $('#id_data_inicio').val($("#myModal #start").text())
-			    $('#id_data_fim').val($("#myModal #end").text())
+                $.ajax({
+			            "type"     : "GET",
+			            "url"      : "./load_locacao",
+			            "dataType" : "html",
+			            "cache"    : false,
+			            "success"  : function(form) {
+			                $('#myModal .modal-body .form-content').html(form);
+			                $('form').attr('action','./save_locacao/')
 
-				$('#myModal').on('hidden.bs.modal', function (e) {
-  					// do something...
-  					console.log(e);
-					var eventData;
-					if (title) {
-						eventData = {
-							title: title,
-							start: start,
-							end: end
-						};
-						$('#calendar').fullCalendar('renderEvent', eventData, true); // stick? = true
-					}
-				});
+						    $('#id_data_inicio').val($("#myModal #start").text())
+						    $('#id_data_fim').val($("#myModal #end").text())
+							$('#myModal').modal('show');
+
+			            }           
+			    });
+				// $('#myModal').on('hidden.bs.modal', function (e) {
+  		// 			// do something...
+  		// 			console.log(e);
+				// 	var eventData;
+				// 	if (title) {
+				// 		eventData = {
+				// 			title: title,
+				// 			start: start,
+				// 			end: end
+				// 		};
+				// 		$('#calendar').fullCalendar('renderEvent', eventData, true); // stick? = true
+				// 	}
+				// });
 
 				$('#calendar').fullCalendar('unselect');
 
@@ -125,8 +156,10 @@
 				{
 					id: '{{locacao.id}}',
 					title: '{{locacao.id}}',
-					start: "{{locacao.data_inicio|date:'c'}}",
-					end: "{{locacao.data_fim|date:'c'}}"
+					start: "{{locacao.data_inicio|date:'Y-m-d'}}",
+					end: "{{locacao.data_fim|addOneDay|date:'Y-m-d'}}",
+					allDay:true
+
 
 				},
 				

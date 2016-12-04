@@ -1,8 +1,8 @@
 (function($){   
     $(function(){
         $(document).ready(function() {
-            $('#id_veiculo').bind('change', veiculo_change);           
-            $('#id_hodometroFinal').bind('keyup input', veiculo_hodometroFinal);           
+            $('body').on('change','#id_veiculo', veiculo_change);           
+            $('body').on('keyup input','#id_hodometroFinal', veiculo_hodometroFinal);           
         });
 });  
 })(jQuery);

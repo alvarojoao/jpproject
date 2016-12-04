@@ -15,7 +15,6 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.shortcuts import render
-
 from django.conf.urls import url
 from django.contrib import admin
 from abastecimento.views import home,labels_available,labels_favorites,update_labels_favorites,get_veiculo_km
@@ -27,9 +26,10 @@ from django.forms import modelformset_factory
 from django.forms import ModelForm
 from django import forms
 from django.shortcuts import redirect
+import datetime
 
 admin.autodiscover()
-
+from django import template
 
 class LocacaoForm(ModelForm):
     readonly = ('hodometroInicial',)
@@ -71,18 +71,21 @@ def save_locacao(request,id):
 
     return redirect('/admin/my_view/')
 
-def load_locacao(request):
+
+def load_locacao(request,id):
     if id is not None:
         locacao = Locacao.objects.get(pk=id)  # if this is an edit form, replace the author instance with the existing one
+    else:
+        locacao = Locacao()
     form = LocacaoForm(request.POST or None, instance=locacao)
-    return form
+    return HttpResponse(form.as_p())
 
 def get_admin_urls(urls):
     def get_urls():
         my_urls = patterns('',
             (r'^my_view/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(my_view)),
             (r'^my_view/save_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(save_locacao)),
-            (r'^my_view/load_locacao/(?P<id>[0-9]+)$', admin.site.admin_view(save_locacao))
+            (r'^my_view/load_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(load_locacao))
         )
         return my_urls + urls
     return get_urls

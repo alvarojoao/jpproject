@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'filer',
     'mptt',
     'easy_thumbnails',
-    'calendarium',
+    'calendarium'
 ]
 
 # Django-bower

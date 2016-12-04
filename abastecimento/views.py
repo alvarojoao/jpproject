@@ -10,7 +10,9 @@ from urlparse import urlparse, parse_qs
 import time
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
+from django import template
 
+register = template.Library()
 @login_required
 def home(request):
 	"""
