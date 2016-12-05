@@ -12,13 +12,15 @@ from django.contrib.auth.models import User
 
 # Register your models here.
 from django.db import transaction
-from abastecimento.models import Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS,ItemManutencao,ItemManutencaoVeiculo,Locacao
+from abastecimento.models import Grupo,Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS,ItemManutencao,ItemManutencaoVeiculo,Locacao
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
 from django.conf.urls import patterns
 from django.contrib import admin
 from django.http import HttpResponse
+from django.utils.translation import ugettext_lazy as _
+from django.db.models import F
 
 
 # class ResponsavelAdmin(UserAdmin):
@@ -29,17 +31,100 @@ from django.http import HttpResponse
 admin.site.site_title = 'Ancar Modulo Administrativo'
 admin.site.site_header = 'Ancar Admin'
 
+class GrupoAdmin(admin.ModelAdmin):
+	pass
+
+admin.site.register(Grupo, GrupoAdmin)
+
+
 class ItemManutencaoAdmin(admin.ModelAdmin):
 	pass
 
 admin.site.register(ItemManutencao, ItemManutencaoAdmin)
 
+class ManutencaoAcionarFilter(admin.SimpleListFilter):
+    # Human-readable title which will be displayed in the
+    # right admin sidebar just above the filter options.
+    title = _('Veiculos precisando manutenção')
+
+    # Parameter for the filter that will be used in the URL query.
+    parameter_name = 'manutencao'
+    default_status = ('Precisa', _('manutencao'))
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each
+        tuple is the coded value for the option that will
+        appear in the URL query. The second element is the
+        human-readable name for the option that will appear
+        in the right sidebar.
+        """
+        return (
+            ('Todos', _('Todos')),
+            ('Precisa', _('manutencao')),
+            ('NaoPrecisa', _('sem manutencao')),
+        )
+
+	def choices(self, changelist):
+
+		for lookup, title in self.lookup_choices:
+		    yield {
+		        'selected': self.value() == lookup,
+		        'query_string': changelist.get_query_string({self.parameter_name: lookup}, []),
+		        'display': title,
+		    }
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        # Compare the requested value (either '80s' or '90s')
+        # to decide how to filter the queryset.
+        if self.value() == 'Precisa':
+            return queryset.filter(valorAcumulado__gte=F('periodoPadrao'))
+        if self.value() == 'NaoPrecisa':
+            return queryset.filter(valorAcumulado__lte=F('periodoPadrao'))
+        if self.value() == 'Todos':
+            return queryset.filter()
+
+
 
 class ItemManutencaoVeiculoAdmin(admin.ModelAdmin):
-	pass
 
+	list_display = ('veiculo','periodoPadrao','valorAcumulado')
+	ordering = ('-valorAcumulado',)
+	search_fields = ['material', 'veiculo']
+	list_filter = (ManutencaoAcionarFilter,'veiculo','material','unidade')
+	# def get_query_set(self):
+	#     return super(ItemManutencaoVeiculoAdmin, self).get_query_set().filter(manutencao='Precisa')
+
+	def changelist_view(self, request, extra_context=None):
+	    if not request.GET.has_key('manutencao'):
+	        q = request.GET.copy()
+	        q['manutencao'] = 'Precisa'  # default value for status
+	        request.GET = q
+	        request.META['QUERY_STRING'] = request.GET.urlencode()
+	    return super(ItemManutencaoVeiculoAdmin, self).changelist_view(
+	        request, extra_context=extra_context)
 admin.site.register(ItemManutencaoVeiculo, ItemManutencaoVeiculoAdmin)
 
+
+# from django.db import models
+
+# class SomeAdmin(admin.ModelAdmin):
+#     list_display = ('db_field', 'custom_field',)
+
+#     def queryset(self, request):
+#         qs = super(SomeAdmin, self).queryset(request)
+#         qs = qs.annotate(models.Count('movies'))
+#         return qs
+
+#     def custom_field(self, obj):
+#         return 'Total movies {0}'.format(obj.movies__count)
+#     custom_field.admin_order_field = 'movies__count'
+#     custom_field.short_description = 'Movies'
 
 class LocacaoAdmin(admin.ModelAdmin):
 	pass
@@ -225,7 +310,7 @@ class VeiculoAdmin(admin.ModelAdmin):
 	search_fields = ['placa','tipo','observacao']
 	list_filter = ('criado_date','atualizado_date','tipo')
 	radio_fields = {"isVeiculo": admin.VERTICAL}
-
+	# filter_horizontal = ('itensManutencao',)
 
 admin.site.register(Veiculo, VeiculoAdmin)
 

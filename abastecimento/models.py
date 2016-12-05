@@ -15,6 +15,7 @@ from django.contrib.auth.models import (
 )
 
 from django.core.validators import MinValueValidator, MaxValueValidator
+from datetime import datetime
 
 def validate_hodometro_and_veiculo_type(value):
 	if value <0 :
@@ -78,7 +79,7 @@ class Eixo(models.Model):
 class Grupo(models.Model):
 	nome = models.CharField(max_length=100)
 	def __str__(self):
-		return nome
+		return self.nome
 
 class ItemManutencao(models.Model):
 	grupo = models.ForeignKey(Grupo)
@@ -89,19 +90,6 @@ class ItemManutencao(models.Model):
 	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
 	def __str__(self):
 		return self.material
-
-class ItemManutencaoVeiculo(models.Model):
-	ItemManutencao = models.ForeignKey(ItemManutencao)
-	descricao = models.CharField(max_length=200)
-	material = models.CharField(max_length=200)
-	periodoPadrao = models.IntegerField('Horas ou Kilometros para cada troca',default=0)
-	quantidade = models.IntegerField('Quantidade necessaria para troca',default=0)
-	unidade = models.CharField(max_length=3, choices=UNIDADE_VEICULO,blank=True, null=True)
-	tempoServico = models.IntegerField('Tempo de servico total',default=0)
-	criado_date = models.DateField("Data Criada", auto_now_add=True)
-	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
-	def __str__(self):
-		return str(self.periodoPadrao)
 
 
 
@@ -201,9 +189,9 @@ class Veiculo(models.Model):
 	isVeiculo = models.BooleanField(choices=MAQUINA_VEICULO,default=True,blank=False, null=False,verbose_name="Veiculo/Maquina ")
 	observacao = models.TextField( blank=True, null=True)
 	favorito = models.BooleanField(verbose_name="Favorito no grafico",default=False)
-	itensManutencao = models.ManyToManyField(ItemManutencaoVeiculo,null=True,blank=True)
+	# itensManutencao = models.ManyToManyField(ItemManutencaoVeiculo,null=True,blank=True)
 	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
-
+	hodometro_date = models.DateField("Data da atualizacao do hodometro",default=datetime.now, blank=True)
 	criado_date = models.DateField("Data Criada",
 	        auto_now_add=True)
 	atualizado_date = models.DateTimeField("Data Atualizado",
@@ -211,6 +199,24 @@ class Veiculo(models.Model):
 
 	def __str__(self):
 		return unicode(self.placa)+' - TIPO: '+str(self.tipo)
+
+class ItemManutencaoVeiculo(models.Model):
+	itemManutencao = models.ForeignKey(ItemManutencao)
+	# veiculo = models.ForeignKey(Veiculo)
+	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
+	descricao = models.CharField(max_length=200)
+	material = models.CharField(max_length=200)
+	periodoPadrao = models.IntegerField('Horas ou Kilometros para cada troca',default=0)
+	quantidade = models.IntegerField('Quantidade de itens',default=0)
+	valorAcumulado = models.IntegerField('Horas ou Kilometros ja registrado',default=0)
+	unidade = models.CharField(max_length=3, choices=UNIDADE_VEICULO,blank=True, null=True)
+	status = models.BooleanField('Status',choices=SIM_NAO,default=False,blank=False, null=False)
+	
+	criado_date = models.DateField("Data Criada", auto_now_add=True)
+	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
+	
+	def __str__(self):
+		return str(self.periodoPadrao)
 
 class ItemManutencaoProgramado(models.Model):
 	ItemManutencaoVeiculo = models.ForeignKey(ItemManutencaoVeiculo)
@@ -296,10 +302,8 @@ class Locacao(models.Model):
 	horasmanutencaoCorretiva = models.IntegerField('Horas Manutenção corretiva',default=0,validators=[MinValueValidator(0),
                                        MaxValueValidator(8)])
 	observacao = models.TextField( blank=True, null=True)
-	data_inicio = models.DateField("Data Inicio"
-	        )
-	data_fim = models.DateField("Data Fim"
-	        )
+	data_inicio = models.DateField("Data Inicio")
+	data_fim = models.DateField("Data Fim")
 
 	criado_date = models.DateField("Data Criada",
 	        auto_now_add=True)
@@ -307,4 +311,13 @@ class Locacao(models.Model):
 	        blank=True, null=True,auto_now=True)
 	def title(self):
 		return str(self.veiculo)+' '+str(self.obra)+' HorasProdutivas:'+str(self.horasprodutivo-self.horasmanutencaoPreventiva-self.horasmanutencaoCorretiva)
+
+
+
+
+
+
+
+
+
 

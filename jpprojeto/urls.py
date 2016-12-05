@@ -43,7 +43,7 @@ class LocacaoForm(ModelForm):
 
     class Meta:
         model = Locacao
-        exclude=('criado_date','atualizado_date')
+        exclude=('criado_date','atualizado_date','hodometro_date')
         readonly = ('hodometroInicial','data_inicio','data_fim')
 
 
@@ -68,8 +68,10 @@ def save_locacao(request,id):
 
         if form.is_valid():
             locacao = form.save(commit=True)
-            locacao.veiculo.hodometro = locacao.hodometroFinal
-            locacao.veiculo.save()
+            if locacao.data_fim>=locacao.hodometro_date:
+                locacao.veiculo.hodometro = locacao.hodometroFinal
+                locacao.hodometro_date = locacao.data_fim
+                locacao.veiculo.save()
 
     return redirect('/admin/my_view/')
 
