@@ -93,13 +93,18 @@ class ManutencaoAcionarFilter(admin.SimpleListFilter):
 
 class ItemManutencaoVeiculoAdmin(admin.ModelAdmin):
 
-	list_display = ('veiculo','periodoPadrao','valorAcumulado')
+	list_display = ('veiculo','periodoPadrao','valorAcumulado','precisaManutencao')
 	ordering = ('-valorAcumulado',)
 	search_fields = ['material', 'veiculo']
 	list_filter = (ManutencaoAcionarFilter,'veiculo','material','unidade')
 	# def get_query_set(self):
 	#     return super(ItemManutencaoVeiculoAdmin, self).get_query_set().filter(manutencao='Precisa')
 
+	def precisaManutencao(self,obj):
+		need = obj.precisaManutencao()
+		span = " <span class='need' > Sim <span>" if need =='Sim'else " <span class='' > Não <span>" 
+		return span
+	precisaManutencao.allow_tags = True
 	def changelist_view(self, request, extra_context=None):
 	    if not request.GET.has_key('manutencao'):
 	        q = request.GET.copy()
@@ -108,6 +113,7 @@ class ItemManutencaoVeiculoAdmin(admin.ModelAdmin):
 	        request.META['QUERY_STRING'] = request.GET.urlencode()
 	    return super(ItemManutencaoVeiculoAdmin, self).changelist_view(
 	        request, extra_context=extra_context)
+
 admin.site.register(ItemManutencaoVeiculo, ItemManutencaoVeiculoAdmin)
 
 

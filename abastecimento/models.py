@@ -218,6 +218,9 @@ class ItemManutencaoVeiculo(models.Model):
 	def __str__(self):
 		return str(self.periodoPadrao)
 
+	def precisaManutencao(self):
+		return SIM_NAO[self.periodoPadrao < self.valorAcumulado][1]
+
 class ItemManutencaoProgramado(models.Model):
 	ItemManutencaoVeiculo = models.ForeignKey(ItemManutencaoVeiculo)
 	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
