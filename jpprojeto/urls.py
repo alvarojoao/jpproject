@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """{{ project_name }} URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -17,16 +19,17 @@ from django.conf.urls import url, include
 from django.shortcuts import render
 from django.conf.urls import url
 from django.contrib import admin
-from abastecimento.views import home,labels_available,labels_favorites,update_labels_favorites,get_veiculo_km
+from abastecimento.views import home,balancotable,labels_available,labels_favorites,update_labels_favorites,get_veiculo_km
 from django.conf.urls import patterns
 from django.contrib import admin
 from django.http import HttpResponse
-from abastecimento.models import Locacao
+from abastecimento.models import Locacao,Veiculo
 from django.forms import modelformset_factory
 from django.forms import ModelForm
 from django import forms
 from django.shortcuts import redirect
 import datetime
+from django.template import Context, Template
 
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
@@ -46,8 +49,7 @@ class LocacaoForm(ModelForm):
         exclude=('criado_date','atualizado_date','hodometro_date')
         readonly = ('hodometroInicial','data_inicio','data_fim')
 
-
-def my_view(request,id):
+def locacao(request,id):
     # return HttpResponse("Hello!")
     locacao = Locacao()
     # author_form = AuthorModelForm(instance=locacao) # setup a form for the parent
@@ -55,7 +57,24 @@ def my_view(request,id):
     form = LocacaoForm(request.POST or None, instance=locacao)
     # formset = LocacaoFormSet()
     locacaos = Locacao.objects.all()
-    return render(request, 'calendar/as.html',{'formset': form,'locacaos':locacaos})
+
+    return render(request, 'locacao/locacao.html',{u'title':'Locação','site_header':'Ancar Admin','formset': form,'locacaos':locacaos})
+
+def balanco(request,id):
+    veiculos = Veiculo.objects.all()
+    return render(request, 'custos/balanco.html',{u'title':'balanco','site_header':'Ancar Admin'})
+
+def abastecimento_grafico(request,id):
+    # 
+    # context = template.RequestContext(request)
+    return render(request, 'abastecimento/graficos.html',{u'title':'balanco','site_header':'Ancar Admin'})
+
+def processBalanco(request,veiculo_id,data_in,data_out):
+    pass
+    # ItemManutencaoProgramado
+    # ItemManutencaoNaoProgramado
+    # Locacao
+
 
 def save_locacao(request,id):
     if id is not None:
@@ -68,12 +87,16 @@ def save_locacao(request,id):
 
         if form.is_valid():
             locacao = form.save(commit=True)
-            if locacao.data_fim>=locacao.hodometro_date:
+            print locacao.data_fim
+            print locacao.veiculo.hodometro_date
+            print locacao.data_fim>=locacao.veiculo.hodometro_date
+            print locacao.hodometroFinal
+            if locacao.data_fim>=locacao.veiculo.hodometro_date:
                 locacao.veiculo.hodometro = locacao.hodometroFinal
-                locacao.hodometro_date = locacao.data_fim
+                locacao.veiculo.hodometro_date = locacao.data_fim
                 locacao.veiculo.save()
 
-    return redirect('/admin/my_view/')
+    return redirect('/admin/locacao/')
 
 @csrf_exempt
 def delete_locacao(request,id):
@@ -82,7 +105,7 @@ def delete_locacao(request,id):
         if locacao and request.method=='POST':
             locacao.delete()
 
-    return redirect('/admin/my_view/')
+    return redirect('/admin/locacao/')
 
 def load_locacao(request,id):
     if id is not None:
@@ -92,13 +115,17 @@ def load_locacao(request,id):
     form = LocacaoForm(request.POST or None, instance=locacao)
     return HttpResponse(form.as_p())
 
+
+
 def get_admin_urls(urls):
     def get_urls():
         my_urls = patterns('',
-            (r'^my_view/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(my_view)),
-            (r'^my_view/save_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(save_locacao)),
-            (r'^my_view/delete_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(delete_locacao)),
-            (r'^my_view/load_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(load_locacao))
+            (r'^abastecimento/balanco/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(balanco)),
+            (r'^abastecimento/abastecimento_grafico/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(abastecimento_grafico)),
+            (r'^locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(locacao)),
+            (r'^locacao/save_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(save_locacao)),
+            (r'^locacao/delete_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(delete_locacao)),
+            (r'^locacao/load_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(load_locacao))
         )
         return my_urls + urls
     return get_urls
@@ -110,6 +137,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^calendar/', include('calendarium.urls')),
     url(r'^customgraph/', home),
+    url(r'^balancotable/', balancotable),
     url(r'^get_veiculo_km/(?P<id>.+)', get_veiculo_km),
     url(r'^labels_available/', labels_available),
     url(r'^labels_favorites/', labels_favorites),

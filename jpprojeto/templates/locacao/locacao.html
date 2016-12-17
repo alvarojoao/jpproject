@@ -1,0 +1,194 @@
+{% extends "admin/index.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% load app_filters %}
+
+{% block content  %}
+
+	{% if request.user.is_superuser %}
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link href='//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.0.1/fullcalendar.min.css' rel='stylesheet' />
+	<link href='//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.0.1/fullcalendar.print.css' rel='stylesheet' media='print' />
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+	<script src='http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.0/moment.min.js'></script>
+	<script src='//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.0.1/fullcalendar.min.js'></script>
+
+	  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+	  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.0/locale/pt-br.js"></script>
+	  <script src="https://fullcalendar.io/js/fullcalendar-3.0.1/locale-all.js"></script>
+
+		{{formset.media}}
+	<style>
+
+		
+		#calendar {
+			max-width: 900px;
+			margin: 0 auto;
+		}
+
+	</style>
+	</head>
+	<body>
+
+		<div id='calendar'></div>
+
+		<!-- Modal -->
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	        <h4 class="modal-title" id="myModalLabel">Locacao 
+	        <span id="start" class="label label-info"></span>
+			<span id="end" class="label label-info"></span>
+			</h4>
+	      </div>
+		<input type="hidden" id='locacal_id' name="locacal_id">
+
+		<form method="POST" action="./save_locacao/">
+		<button type="button" id="delteBtn" class="btn btn-danger">Deletar</button>
+	      <div class="modal-body">
+	            {% csrf_token %}
+	            <div class="form-content">
+	            	
+				{{ formset.as_p }}
+	            </div>
+
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+	        <button type="submit" class="btn btn-primary">Salvar</button>
+	      </div>
+		</form>       
+	    </div>
+	  </div>
+	  </div>
+	  	<!-- Modal -->
+	<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	        <h4 class="modal-title" id="myModalLabel">Deletar Locacao?
+			</h4>
+	      </div>
+		<form method="POST" action="./delete_locacao/">
+	      <div class="modal-body">
+	            {% csrf_token %}
+	      	
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+	        <button type="submit" class="btn btn-primary">Remover</button>
+	      </div>
+		</form>       
+	    </div>
+	  </div>
+	  </div>
+	</body>
+
+	<script>
+
+		$(document).ready(function() {
+			$('#delteBtn').bind('click',function(e){
+
+	            $('#deleteModal form').attr('action','./delete_locacao/'+$('#locacal_id').val()+'')
+	            $('#deleteModal .modal-body').html('<p> Teste locacao detalhes</p>')
+				$('#deleteModal').modal('show');
+			})
+			$('#calendar').fullCalendar({
+				locale: 'pt-br',
+
+				header: {
+					left: 'prev,next today',
+					center: 'title',
+					right: 'month,agendaWeek,agendaDay,listMonth'
+				},
+				// defaultDate: '2016-09-12',
+				navLinks: true, // can click day/week names to navigate views
+				selectable: true,
+				selectHelper: true,
+				eventClick: function(calEvent, jsEvent, view) {
+					$.ajax({
+				            "type"     : "GET",
+				            "url"      : "./load_locacao/"+calEvent.id,
+				            "dataType" : "html",
+				            "cache"    : false,
+				            "success"  : function(form) {
+				                $('#myModal .modal-body .form-content').html(form);
+				                $('#myModal form').attr('action','./save_locacao/'+calEvent.id+'')
+
+								$('#myModal').modal('show');
+								$("#myModal #start").html(calEvent.start.format("DD/MM/YYYY"))
+								$('#delteBtn').show()
+								$('#locacal_id').val(calEvent.id)
+								if(calEvent.end)
+									$("#myModal #end").html(calEvent.end.subtract(1,'days').format("DD/MM/YYYY"))
+								else
+									$("#myModal #end").html('')
+
+				            }           
+				    });
+					
+			        // change the border color just for fun
+			        $(this).css('border-color', 'red');
+
+			    },
+				select: function(start, end) {
+					// var title = prompt('Event Title:');
+					$("#myModal #start").html(start.format("DD/MM/YYYY"))
+					$("#myModal #end").html(end.subtract(1,'days').format("DD/MM/YYYY"))
+					$('#myModal').modal('show');
+
+	                $.ajax({
+				            "type"     : "GET",
+				            "url"      : "./load_locacao",
+				            "dataType" : "html",
+				            "cache"    : false,
+				            "success"  : function(form) {
+				                $('#myModal .modal-body .form-content').html(form);
+				                $('#myModal form').attr('action','./save_locacao/')
+
+							    $('#id_data_inicio').val($("#myModal #start").text())
+							    $('#id_data_fim').val($("#myModal #end").text())
+								$('#delteBtn').hide()
+								$('#myModal').modal('show');
+
+
+				            }           
+				    });
+
+					$('#calendar').fullCalendar('unselect');
+
+				},
+				editable: false,
+				eventLimit: true, // allow "more" link when too many events
+				events: [
+
+					{% for locacao in locacaos %}
+					{
+						id: '{{locacao.id}}',
+						title: '{{locacao.title}}',
+						start: "{{locacao.data_inicio|date:'Y-m-d'}}",
+						end: "{{locacao.data_fim|addOneDay|date:'Y-m-d'}}",
+						allDay:true
+
+
+					},
+					
+					{%endfor%}
+				]
+			});
+			
+		});
+
+	</script>
+
+
+	{% endif %}
+	{{ block.super }}
+
+{% endblock %}

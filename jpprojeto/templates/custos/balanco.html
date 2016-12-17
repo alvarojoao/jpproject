@@ -1,0 +1,199 @@
+{% extends "admin/index.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block content %}
+		{% if request.user.is_superuser %}
+
+		<script type="text/javascript" src="{% static "dygraphs/dygraph-combined.js" %} "></script>
+		<script type="text/javascript" src="{% static "chosen/chosen.jquery.js" %} "></script>
+  		<link rel="stylesheet" type="text/css" href="{% static "chosen/chosen.css" %}" />
+  		<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.css">
+  
+		<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.js"></script>
+		<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/buttons/1.2.2/js/dataTables.buttons.min.js"></script>
+		<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/buttons/1.2.2/js/buttons.flash.min.js"></script>
+		<script type="text/javascript" charset="utf8" src="//cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+		<script type="text/javascript" charset="utf8" src="//cdn.rawgit.com/bpampuch/pdfmake/0.1.18/build/pdfmake.min.js"></script>
+		<script type="text/javascript" charset="utf8" src="//cdn.rawgit.com/bpampuch/pdfmake/0.1.18/build/vfs_fonts.js"></script>
+		<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/buttons/1.2.2/js/buttons.html5.min.js"></script>
+		<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/buttons/1.2.2/js/buttons.print.min.js"></script>
+
+
+  		<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+
+  		<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/buttons/1.2.2/css/buttons.dataTables.min.css">
+
+
+		<!-- Include Required Prerequisites -->
+		<script type="text/javascript" src="{% static "moment/min/moment.min.js" %} "></script>
+		<link rel="stylesheet" type="text/css" href="{% static "bootstrap_admin/css/bootstrap.min.css" %}"  />
+		 
+		<!-- Include Date Range Picker -->
+		<script type="text/javascript" src="{% static "bootstrap-daterangepicker/daterangepicker.js" %} " ></script>
+		<link rel="stylesheet" type="text/css" href="{% static "bootstrap-daterangepicker/daterangepicker.css" %}" />
+
+		<style type="text/css">
+			.few .dygraph-legend > span.highlight { border: 1px solid grey; }
+
+			.many .dygraph-legend > span { display: none; }
+
+			.many .dygraph-legend > span.highlight { display: inline; }
+		</style>
+		<h1>Datas de Inicio e Fim</h1>
+
+		<input type="text" id="date_range" name="daterange" value="01/07/2016 - 31/12/2016" />
+
+		<script type="text/javascript">
+			$(function() {
+			    $('input[name="daterange"]').daterangepicker({autoApply:true,locale: {
+	            format: 'DD/MM/YYYY'
+	        	}});
+			    $('input[name="daterange"]').on('apply.daterangepicker', function(ev, picker) {
+			      $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+			  });
+			});
+		</script> 
+		<div style="padding:20px;" id="favoritos_graficos"></div>
+		<br>
+		<h1> Todas as Placas </h1>
+		<select id="placas" class="chosen-select" data-placeholder="Escolha os Equipamentos ..." style="width:350px;padding:10px;" multiple="" tabindex="2">
+      	</select>
+      	<br><br><br>
+		<div id="consumo-tablea" ></div>
+		<br>
+		<script type="text/javascript">
+			var formateDate = function(date,standart){
+	   			var formated = '';
+	   			if(standart){
+
+                	var dd = date.getDate();
+					var mm = date.getMonth()+1; //January is 0!
+					var yyyy = date.getFullYear();
+					if(dd<10){
+					    dd='0'+dd
+					} 
+					if(mm<10){
+					    mm='0'+mm
+					} 
+					formated = yyyy+'/'+mm+'/'+dd;
+	   			}else{
+	   				var dd = date.getDate();
+					var mm =  date.getMonth()+1; //January is 0!
+					var yyyy =  date.getFullYear().toString().substr(2,2);
+					if(dd<10){
+					    dd='0'+dd
+					} 
+					if(mm<10){
+					    mm='0'+mm
+					} 
+					formated = dd+'/'+mm+'/'+ yyyy;
+	   			}
+
+				return formated
+	   		};
+		   $(document).ready(function () {
+		   		
+		   		var change_mainGraph = function(evt, params) {
+				    var selected_values  = $("#placas").chosen().val();
+				    var monthsago_selected  = undefined;//$("#date").chosen().val();
+				    var date_range  = $("#date_range").val();
+
+				    selected_values = selected_values?selected_values:[];
+				    var string_selected_values =  selected_values.join(",");
+				    generateTable(string_selected_values,'consumo-tablea',monthsago_selected,date_range);
+			  	};
+
+			  	var generateTable= function(placas,div_initial,monthsago,date_range){
+			  		var monthsago_val = monthsago?monthsago:12
+		   			var placas_query = placas?'placas='+placas+'&' :''
+		   			var monthsago_query = monthsago_val?'monthsago='+monthsago_val+'&':''
+		   			var date_range = date_range?'date_range='+date_range+'&':''
+		   			var query =  placas_query+monthsago_query+date_range
+
+		   			$.getJSON( "/balancotable?"+query, function( data ) {
+
+	   					var dates_availables = data.dates.sort(function(a,b){
+								  return new Date(b) - new Date(a);
+							}).map(function(date){return [date,formateDate(new Date(date))]});
+	   					var formatCollumns = [{"data":"nome","title":"Nome"},
+	   											{"data":"total","title":"Total"},
+					 						  {"data":"media","title":"Media em Reais"},
+											  ]
+	   					dates_availables.forEach(function(date){
+	   						formatCollumns.push({"data":date[0],"title":date[1]});
+	   					});
+
+	   					$('#'+div_initial).empty()
+	   					var table = $("<table class='display' width='100%'></table>");
+	   					$('#'+div_initial).append(table);
+					    table.DataTable({
+					        "ajax": "/balancotable?"+query,
+					        "scrollX": true,
+					        "columns": formatCollumns,
+			         		dom: 'Bfrtip',
+					        buttons: [
+					        	{
+						            extend: 'csv',
+						            text: 'CSV',
+						            filename: 'table-'+formateDate(new Date())
+						        },
+						        {
+						            extend: 'excel',
+						            text: 'excel',
+						            filename: 'table-'+formateDate(new Date())
+						        },
+						        {
+						            extend: 'pdf',
+						            text: 'pdf',
+						            filename: 'table-'+formateDate(new Date())
+						        },
+					            'print'
+					        ]
+					    } );
+					});
+				}
+
+				$.getJSON( "/labels_available", function( data ) {
+		   			selectId = document.getElementById('placas');
+		   			initial_index = selectId.options.length
+					for(i = 0;i<data.length;i++) {   			
+ 						selectId.options[initial_index] = new Option(data[i], data[i]);
+ 						initial_index++;
+	 				}
+	 				$("#placas.chosen-select").chosen({
+						disable_search_threshold: 10,
+						no_results_text: "Oops, Nada Encontrado!",
+						width: "95%"
+					});
+				 //  	$("#date.chosen-select").chosen({
+					// 	disable_search_threshold: 10,
+					// 	no_results_text: "Oops, Nada Encontrado!",
+					// 	width: "95%"
+					// });
+					$('#placas').on('change',change_mainGraph );
+					// $('#date').on('change', function (evt,params) {
+					// 	change_mainGraph();
+					// 	change_favoriteGraph();
+
+					// });
+					$('#date_range').on('apply.daterangepicker', function(ev, picker) {
+						change_mainGraph();
+						change_favoriteGraph();
+					  // console.log(picker.startDate.format('YYYY-MM-DD'));
+					  // console.log(picker.endDate.format('YYYY-MM-DD'));
+					});
+					change_mainGraph();
+
+
+				});
+				
+				
+		    });
+		</script>
+		
+		 
+
+	{% endif %}
+	{{ block.super }}
+	
+{% endblock %}

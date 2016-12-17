@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 
 # Register your models here.
 from django.db import transaction
-from abastecimento.models import Grupo,Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS,ItemManutencao,ItemManutencaoVeiculo,Locacao
+from abastecimento.models import Grupo,Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS,ItemManutencao,ItemManutencaoVeiculo,Locacao,ItemManutencaoProgramado,ItemManutencaoNaoProgramado
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
@@ -37,7 +37,24 @@ class GrupoAdmin(admin.ModelAdmin):
 admin.site.register(Grupo, GrupoAdmin)
 
 
+class ItemManutencaoProgramadoAdmin(admin.ModelAdmin):
+	pass
+
+admin.site.register(ItemManutencaoProgramado, ItemManutencaoProgramadoAdmin)
+
+
+class ItemManutencaoNaoProgramadoAdmin(admin.ModelAdmin):
+	pass
+
+admin.site.register(ItemManutencaoNaoProgramado, ItemManutencaoNaoProgramadoAdmin)
+
+
+
+
 class ItemManutencaoAdmin(admin.ModelAdmin):
+	class  Meta:
+		proxy = True
+		app_label = 'equipamento'
 	pass
 
 admin.site.register(ItemManutencao, ItemManutencaoAdmin)
@@ -303,6 +320,7 @@ class Veiculoform(forms.ModelForm):
 	class Meta:
 		model = Veiculo
 		fields = '__all__'
+		app_label = 'equipamento'
 
 		def clean(self):
 			start_date = self.cleaned_data.get('veiculo')

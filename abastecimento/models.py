@@ -47,6 +47,9 @@ class Familia(models.Model):
 		return self.codigo
 
 class Marca(models.Model):
+	
+	# class Meta:
+	# 	app_label = 'equipamento'
 	nome = models.CharField(max_length=200,primary_key=True)
 	descricao = models.CharField(max_length=200)
 	def __str__(self):
@@ -58,6 +61,9 @@ UNIDADE_VEICULO = (
 )
 
 class Modelo(models.Model):
+
+	# class Meta:
+	# 	app_label = 'equipamento'
 	nome = models.CharField(max_length=200,primary_key=True)
 	marca = models.ForeignKey(Marca,null=True)
 	descricao = models.CharField(max_length=200)
@@ -66,11 +72,17 @@ class Modelo(models.Model):
 		return self.nome
 
 class Cor(models.Model):
+
+	# class Meta:
+	# 	app_label = 'equipamento'
 	cor = models.CharField(max_length=200)
 	def __str__(self):
 		return self.cor
 
 class Eixo(models.Model):
+
+	# class Meta:
+	# 	app_label = 'equipamento'
 	descricao = models.CharField(max_length=200)
 	numeroPneus = models.IntegerField('Número de Pneus',default=0)
 	def __str__(self):
@@ -82,6 +94,9 @@ class Grupo(models.Model):
 		return self.nome
 
 class ItemManutencao(models.Model):
+
+	# class Meta:
+	# 	app_label = 'equipamento'
 	grupo = models.ForeignKey(Grupo)
 	descricao = models.CharField(max_length=200)
 	material = models.CharField(max_length=200)
@@ -166,6 +181,7 @@ class Obra(models.Model):
 
 
 class Fornecedor(models.Model):
+
 	codigo = models.CharField(max_length=200,primary_key=True)
 	razaoSocial = models.CharField(max_length=200)
 	nomeFantasia = models.CharField(max_length=200)
@@ -183,6 +199,9 @@ class Fornecedor(models.Model):
 		return self.nome+' - cnpj: '+(str(self.cnpj) if self.cnpj else 'Nao Tem')
 
 class Veiculo(models.Model):
+	# class Meta:
+	# 	app_label = 'equipamento'
+
 	placa = models.CharField(verbose_name="Placa/Codigo Interno",max_length=30,primary_key=True)
 	
 	tipo = models.CharField(max_length=13, choices=TIPO_VEICULOS,blank=True, null=True)
@@ -190,6 +209,9 @@ class Veiculo(models.Model):
 	observacao = models.TextField( blank=True, null=True)
 	favorito = models.BooleanField(verbose_name="Favorito no grafico",default=False)
 	# itensManutencao = models.ManyToManyField(ItemManutencaoVeiculo,null=True,blank=True)
+	
+	valor = models.FloatField('Valor')
+	
 	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
 	hodometro_date = models.DateField("Data da atualizacao do hodometro",default=datetime.now, blank=True)
 	criado_date = models.DateField("Data Criada",
@@ -201,6 +223,10 @@ class Veiculo(models.Model):
 		return unicode(self.placa)+' - TIPO: '+str(self.tipo)
 
 class ItemManutencaoVeiculo(models.Model):
+
+	# class Meta:
+	# 	app_label = 'equipamento'
+
 	itemManutencao = models.ForeignKey(ItemManutencao)
 	# veiculo = models.ForeignKey(Veiculo)
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
@@ -211,7 +237,9 @@ class ItemManutencaoVeiculo(models.Model):
 	valorAcumulado = models.IntegerField('Horas ou Kilometros ja registrado',default=0)
 	unidade = models.CharField(max_length=3, choices=UNIDADE_VEICULO,blank=True, null=True)
 	status = models.BooleanField('Status',choices=SIM_NAO,default=False,blank=False, null=False)
+	valor = models.FloatField('Valor Em Reais',default=0)
 	
+
 	criado_date = models.DateField("Data Criada", auto_now_add=True)
 	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
 	
@@ -222,18 +250,29 @@ class ItemManutencaoVeiculo(models.Model):
 		return SIM_NAO[self.periodoPadrao < self.valorAcumulado][1]
 
 class ItemManutencaoProgramado(models.Model):
+
+	# class Meta:
+	# 	app_label = 'custos'
+
 	ItemManutencaoVeiculo = models.ForeignKey(ItemManutencaoVeiculo)
 	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
+	valor = models.FloatField('Valor',default=0)
+
 	criado_date = models.DateField("Data Criada", auto_now_add=True)
 	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
 	def __str__(self):
 		return str(self.veiculo)
 
 class ItemManutencaoNaoProgramado(models.Model):
+
+	# class Meta:
+	# 	app_label = 'custos'
 	ItemManutencao = models.ForeignKey(ItemManutencao)
 	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
+	valor = models.FloatField('Valor',default=0)
+
 	criado_date = models.DateField("Data Criada", auto_now_add=True)
 	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
 	def __str__(self):
@@ -293,6 +332,8 @@ class Abastecimento(models.Model):
 
 
 class Locacao(models.Model):
+	# class Meta:
+	# 	app_label = 'locacao'
 
 	obra = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
