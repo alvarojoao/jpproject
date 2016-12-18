@@ -109,7 +109,6 @@ def delete_locacao(request,id):
 
     return redirect('/admin/locacao/')
 
-
 def load_locacao(request,id):
     if id is not None:
         locacao = Locacao.objects.get(pk=id)  # if this is an edit form, replace the author instance with the existing one

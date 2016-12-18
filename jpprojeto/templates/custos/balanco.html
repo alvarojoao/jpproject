@@ -163,21 +163,40 @@
 									                "data":           null,
 									                "defaultContent": ''
 									            },
-	   											{"data":"nome","title":"Nome"},
+	   											{"data":"nome",title:"Nome" , "visible": true },
    												{"data":"newC.balanco.total", title:"Balanco" },
    												{"data":"newC.locacao.total", title:"Locacao" },
    												{"data":"newC.nao_programado.total", title:"Custo nao programado" },
    												{"data":"newC.programado.total", title:"Custo programado" },
 											  ]
+					  	var tr_date = $('<tr>');
+					  	//adicionar varias colunas de datas e as esconder ! 
 	   					// dates_availables.forEach(function(date){
 	   					// 	formatCollumns.push({"data":date[0],"title":date[1]});
+	   					// 	tr_date.append('<th>'+date[1]+'</th>')
 	   					// });
 
 	   					var div = $('#consumo-tablea')
 	   					div.empty()
 						
-	   					var t = $('<table id="table" class="display" width="100%"></table>');
+	   					var t = $('<table id="table" class="display" width="100%"> \
+										  <thead>\
+										    <tr>\
+										      <th colspan="3">Major-Col1</th>\
+										      <th colspan="3">Major-Col2</th>\
+										    </tr>\
+										    <tr>\
+										      <th></th>\
+										      <th>Nome</th>\
+										      <th>Balanco</th>\
+										      <th>Locacao</th>\
+										      <th>Custo nao programado</th>\
+										      <th>Custo programado</th>\
+										    </tr>\
+										  </thead>\
+	   						</table>');
 	   					div.append(t);
+
 
 
 						var table =  $('#table').DataTable({
