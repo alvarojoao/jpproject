@@ -49,6 +49,8 @@ class LocacaoForm(ModelForm):
         exclude=('criado_date','atualizado_date','hodometro_date')
         readonly = ('hodometroInicial','data_inicio','data_fim')
 
+
+
 def locacao(request,id):
     # return HttpResponse("Hello!")
     locacao = Locacao()
@@ -74,7 +76,6 @@ def processBalanco(request,veiculo_id,data_in,data_out):
     # ItemManutencaoProgramado
     # ItemManutencaoNaoProgramado
     # Locacao
-
 
 def save_locacao(request,id):
     if id is not None:
@@ -114,8 +115,6 @@ def load_locacao(request,id):
         locacao = Locacao()
     form = LocacaoForm(request.POST or None, instance=locacao)
     return HttpResponse(form.as_p())
-
-
 
 def get_admin_urls(urls):
     def get_urls():

@@ -181,6 +181,7 @@ def balancotable(request):
 		veiculos_custo_programado = {}
 		veiculos_custo_nao_programado = {}
 
+		print placas
 		for pl,valor in placas:
 			veiculos_data[pl] =  locacoes.filter(veiculo__placa=pl).order_by('data_inicio').values('data_inicio','data_fim')
 			dummy = {}
@@ -209,9 +210,13 @@ def balancotable(request):
 
 			veiculos_custo_programado[pl] = dummy
 			total_balanco = 0
+			finalarrayPivotElement = {}
+			finalarrayPivotElement['nome'] = pl
+			finalarrayPivotElement['newC'] = {}
 			for nome,data_ in [('locacao',veiculos_locacao),('nao_programado',veiculos_custo_nao_programado),('programado',veiculos_custo_programado)]:
-				finalarrayPivotElement = {}
-				finalarrayPivotElement['nome'] = pl+' '+nome
+				
+				finalarrayPivotElement['newC'][nome]={}
+				finalarrayPivotElement['newC'][nome]['nome-sub'] = pl+' '+nome
 				dataformean = []
 				for date_val in dates:
 					dataformean.append(data_[pl].get(date_val,0))
@@ -219,20 +224,20 @@ def balancotable(request):
 					output = data_[pl].get(date_val,None)
 					if output:
 						formatedOut =  ('R$')+str(output)
-					finalarrayPivotElement[date_val] = formatedOut
-				finalarrayPivotElement['media'] = ('R$')+str(mean(dataformean))
-				finalarrayPivotElement['total'] = ('R$')+str(sum(dataformean))
+					finalarrayPivotElement['newC'][nome][date_val] = formatedOut
+				finalarrayPivotElement['newC'][nome]['media'] = ('R$')+str(mean(dataformean))
+				finalarrayPivotElement['newC'][nome]['total'] = ('R$')+str(sum(dataformean))
 				total_balanco += sum(dataformean)
-				finalarrayPivot.append(finalarrayPivotElement)
 			
-			finalarrayPivotElement = {}
-			finalarrayPivotElement['nome'] = pl+' Balanco'
-			finalarrayPivotElement['total'] = ('R$')+str(total_balanco)
-			finalarrayPivotElement['media'] = ''
+			finalarrayPivotElement['newC']['balanco']={}
+			finalarrayPivotElement['newC']['balanco']['nome-sub'] = pl+' Balanco'
+			finalarrayPivotElement['newC']['balanco']['total'] = ('R$')+str(total_balanco)
+			finalarrayPivotElement['newC']['balanco']['media'] = ''
 			for date_val in dates:
 				formatedOut = ''
-				finalarrayPivotElement[date_val] = formatedOut
+				finalarrayPivotElement['newC']['balanco'][date_val] = formatedOut
 			finalarrayPivot.append(finalarrayPivotElement)
+
 
 	# # print query
 	consumption_data = {}

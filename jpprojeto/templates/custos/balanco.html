@@ -41,7 +41,9 @@
 		</style>
 		<h1>Datas de Inicio e Fim</h1>
 
-		<input type="text" id="date_range" name="daterange" value="01/07/2016 - 31/12/2016" />
+		<input type="text" id="date_range" name="daterange" value="01/07/2016 - 31/12/2016" style="
+    width: 15%;
+" />
 
 		<script type="text/javascript">
 			$(function() {
@@ -59,8 +61,20 @@
 		<select id="placas" class="chosen-select" data-placeholder="Escolha os Equipamentos ..." style="width:350px;padding:10px;" multiple="" tabindex="2">
       	</select>
       	<br><br><br>
-		<div id="consumo-tablea" ></div>
+		<div id="consumo-tablea" >
+			<table id="table" class='display' width='100%'></table>
+		</div>
 		<br>
+		<style type="text/css">
+			
+			td.details-control {
+				background: url({% static "img/details_open.png" %} ) no-repeat center center;
+				cursor: pointer;
+			}
+			tr.shown td.details-control {
+				background: url({% static "img/details_close.png" %}) no-repeat center center;
+			}
+		</style>
 		<script type="text/javascript">
 			var formateDate = function(date,standart){
 	   			var formated = '';
@@ -92,7 +106,36 @@
 				return formated
 	   		};
 		   $(document).ready(function () {
-		   		
+			  	var dates_availables ;
+
+		   		/* Formatting function for row details - modify as you need */
+				function format ( d ,dates_availables) {
+				    // `d` is the original data object for the row
+				  	var table = $('<table>');
+				  	var thead = $('<thead>');
+				  	var columns_html = $('<tr style="font-weight:bold"> </tr>');
+				    var columns_locacao = $('<tr> </tr>');
+				    var columns_custoProgramado =$('<tr> </tr>');
+				    var columns_custoNaoProgramado =$('<tr> </tr>');
+				    columns_html.append('<td style="font-weight:bold">Dados</td>');
+				    columns_locacao.append('<td style="font-weight:bold">Locacao</td>');
+				    columns_custoProgramado.append('<td style="font-weight:bold">Custo programado</td>');
+				    columns_custoNaoProgramado.append('<td style="font-weight:bold">Custo nao programado</td>');
+
+				  	dates_availables.forEach(function(date){
+				  		columns_html.append('<td>'+date[1]+'</td>')
+				  		columns_locacao.append('<td>'+ d.newC.locacao[date[0]]+'</td>')
+				  		columns_custoProgramado.append('<td>'+ d.newC.programado[date[0]]+'</td>')
+				  		columns_custoNaoProgramado.append('<td>'+ d.newC.nao_programado[date[0]]+'</td>')
+				  	});
+				  	thead.append(columns_html);
+				  	table.append(thead);
+				  	table.append(columns_locacao);
+				  	table.append(columns_custoProgramado);
+				  	table.append(columns_custoNaoProgramado);
+
+				    return table ;
+				}
 		   		var change_mainGraph = function(evt, params) {
 				    var selected_values  = $("#placas").chosen().val();
 				    var monthsago_selected  = undefined;//$("#date").chosen().val();
@@ -102,31 +145,36 @@
 				    var string_selected_values =  selected_values.join(",");
 				    generateTable(string_selected_values,'consumo-tablea',monthsago_selected,date_range);
 			  	};
-
 			  	var generateTable= function(placas,div_initial,monthsago,date_range){
 			  		var monthsago_val = monthsago?monthsago:12
 		   			var placas_query = placas?'placas='+placas+'&' :''
 		   			var monthsago_query = monthsago_val?'monthsago='+monthsago_val+'&':''
 		   			var date_range = date_range?'date_range='+date_range+'&':''
 		   			var query =  placas_query+monthsago_query+date_range
-
 		   			$.getJSON( "/balancotable?"+query, function( data ) {
 
 	   					var dates_availables = data.dates.sort(function(a,b){
 								  return new Date(b) - new Date(a);
 							}).map(function(date){return [date,formateDate(new Date(date))]});
-	   					var formatCollumns = [{"data":"nome","title":"Nome"},
-	   											{"data":"total","title":"Total"},
-					 						  {"data":"media","title":"Media em Reais"},
-											  ]
-	   					dates_availables.forEach(function(date){
-	   						formatCollumns.push({"data":date[0],"title":date[1]});
-	   					});
 
-	   					$('#'+div_initial).empty()
-	   					var table = $("<table class='display' width='100%'></table>");
-	   					$('#'+div_initial).append(table);
-					    table.DataTable({
+	   					var formatCollumns = [
+	   											{
+									                "className":      'details-control',
+									                "orderable":      false,
+									                "data":           null,
+									                "defaultContent": ''
+									            },
+	   											{"data":"nome","title":"Nome"},
+   												{"data":"newC.balanco.total", title:"Balanco" },
+   												{"data":"newC.locacao.total", title:"Locacao" },
+   												{"data":"newC.nao_programado.total", title:"Custo nao programado" },
+   												{"data":"newC.programado.total", title:"Custo programado" },
+											  ]
+	   					// dates_availables.forEach(function(date){
+	   					// 	formatCollumns.push({"data":date[0],"title":date[1]});
+	   					// });
+
+						var table =  $('#table').DataTable({
 					        "ajax": "/balancotable?"+query,
 					        "scrollX": true,
 					        "columns": formatCollumns,
@@ -150,8 +198,26 @@
 					            'print'
 					        ]
 					    } );
+					    // Add event listener for opening and closing details
+					    $('body').on('click', 'td.details-control', function () {
+					        var tr = $(this).closest('tr');
+					        var row = table.row( tr );
+					 
+					        if ( row.child.isShown() ) {
+					            // This row is already open - close it
+					            row.child.hide();
+					            tr.removeClass('shown');
+					        }
+					        else {
+					            // Open this row
+					            row.child( format(row.data(),dates_availables) ).show();
+					            tr.addClass('shown');
+					        }
+					    } );
+
 					});
 				}
+				
 
 				$.getJSON( "/labels_available", function( data ) {
 		   			selectId = document.getElementById('placas');
@@ -191,7 +257,7 @@
 		    });
 		</script>
 		
-		 
+		 	
 
 	{% endif %}
 	{{ block.super }}

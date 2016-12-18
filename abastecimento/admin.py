@@ -117,7 +117,6 @@ class ItemManutencaoVeiculoAdmin(admin.ModelAdmin):
 	list_filter = (ManutencaoAcionarFilter,'veiculo','material','unidade')
 	# def get_query_set(self):
 	#     return super(ItemManutencaoVeiculoAdmin, self).get_query_set().filter(manutencao='Precisa')
-
 	def precisaManutencao(self,obj):
 		need = obj.precisaManutencao()
 		span = " <span class='need' > Sim <span>" if need =='Sim'else " <span class='' > Não <span>" 
@@ -132,7 +131,7 @@ class ItemManutencaoVeiculoAdmin(admin.ModelAdmin):
 	    return super(ItemManutencaoVeiculoAdmin, self).changelist_view(
 	        request, extra_context=extra_context)
 
-    def save_model(self, request, obj, form, change):
+	def save_model(self, request, obj, form, change):
 		if obj.id is not None and change and form.status is not obj.status :
 			a = ItemManutencaoProgramado()
 			a.valor = obj.valor
