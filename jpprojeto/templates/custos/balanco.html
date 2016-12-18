@@ -62,7 +62,6 @@
       	</select>
       	<br><br><br>
 		<div id="consumo-tablea" >
-			<table id="table" class='display' width='100%'></table>
 		</div>
 		<br>
 		<style type="text/css">
@@ -93,7 +92,7 @@
 	   			}else{
 	   				var dd = date.getDate();
 					var mm =  date.getMonth()+1; //January is 0!
-					var yyyy =  date.getFullYear().toString().substr(2,2);
+					var yyyy =  date.getFullYear().toString();
 					if(dd<10){
 					    dd='0'+dd
 					} 
@@ -111,16 +110,16 @@
 		   		/* Formatting function for row details - modify as you need */
 				function format ( d ,dates_availables) {
 				    // `d` is the original data object for the row
-				  	var table = $('<table>');
+				  	var table = $('<table role="grid">');
 				  	var thead = $('<thead>');
-				  	var columns_html = $('<tr style="font-weight:bold"> </tr>');
-				    var columns_locacao = $('<tr> </tr>');
-				    var columns_custoProgramado =$('<tr> </tr>');
-				    var columns_custoNaoProgramado =$('<tr> </tr>');
-				    columns_html.append('<td style="font-weight:bold">Dados</td>');
-				    columns_locacao.append('<td style="font-weight:bold">Locacao</td>');
-				    columns_custoProgramado.append('<td style="font-weight:bold">Custo programado</td>');
-				    columns_custoNaoProgramado.append('<td style="font-weight:bold">Custo nao programado</td>');
+				  	var columns_html = $('<tr role="row" style="font-weight:bold"> </tr>');
+				    var columns_locacao = $('<tr role="row"> </tr>');
+				    var columns_custoProgramado =$('<tr role="row"> </tr>');
+				    var columns_custoNaoProgramado =$('<tr role="row"> </tr>');
+				    columns_html.append('<td style="font-weight:bold; border-right: 1px solid black;">Dados</td>');
+				    columns_locacao.append('<td style="font-weight:bold; border-right: 1px solid black;">Locacao</td>');
+				    columns_custoProgramado.append('<td style="font-weight:bold;border-right: 1px solid black;">Custo programado</td>');
+				    columns_custoNaoProgramado.append('<td style="font-weight:bold;border-right: 1px solid black;">Custo nao programado</td>');
 
 				  	dates_availables.forEach(function(date){
 				  		columns_html.append('<td>'+date[1]+'</td>')
@@ -173,6 +172,13 @@
 	   					// dates_availables.forEach(function(date){
 	   					// 	formatCollumns.push({"data":date[0],"title":date[1]});
 	   					// });
+
+	   					var div = $('#consumo-tablea')
+	   					div.empty()
+						
+	   					var t = $('<table id="table" class="display" width="100%"></table>');
+	   					div.append(t);
+
 
 						var table =  $('#table').DataTable({
 					        "ajax": "/balancotable?"+query,
@@ -244,7 +250,6 @@
 					// });
 					$('#date_range').on('apply.daterangepicker', function(ev, picker) {
 						change_mainGraph();
-						change_favoriteGraph();
 					  // console.log(picker.startDate.format('YYYY-MM-DD'));
 					  // console.log(picker.endDate.format('YYYY-MM-DD'));
 					});

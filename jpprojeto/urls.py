@@ -77,6 +77,7 @@ def processBalanco(request,veiculo_id,data_in,data_out):
     # ItemManutencaoNaoProgramado
     # Locacao
 
+
 def save_locacao(request,id):
     if id is not None:
         locacao = Locacao.objects.get(pk=id)  # if this is an edit form, replace the author instance with the existing one
@@ -107,6 +108,7 @@ def delete_locacao(request,id):
             locacao.delete()
 
     return redirect('/admin/locacao/')
+
 
 def load_locacao(request,id):
     if id is not None:
