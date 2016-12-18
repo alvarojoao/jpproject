@@ -40,6 +40,7 @@ admin.site.register(Grupo, GrupoAdmin)
 class ItemManutencaoProgramadoAdmin(admin.ModelAdmin):
 	pass
 
+
 admin.site.register(ItemManutencaoProgramado, ItemManutencaoProgramadoAdmin)
 
 
@@ -130,6 +131,16 @@ class ItemManutencaoVeiculoAdmin(admin.ModelAdmin):
 	        request.META['QUERY_STRING'] = request.GET.urlencode()
 	    return super(ItemManutencaoVeiculoAdmin, self).changelist_view(
 	        request, extra_context=extra_context)
+
+    def save_model(self, request, obj, form, change):
+		if obj.id is not None and change and form.status is not obj.status :
+			a = ItemManutencaoProgramado()
+			a.valor = obj.valor
+			a.itemManutencaoVeiculo = obj
+			a.hodometro = obj.veiculo.hodometro
+			a.veiculo = obj.veiculo
+			a.save()
+		super(ItemManutencaoVeiculoAdmin, self).save_model(request, obj, form, change)
 
 admin.site.register(ItemManutencaoVeiculo, ItemManutencaoVeiculoAdmin)
 

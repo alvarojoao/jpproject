@@ -254,7 +254,7 @@ class ItemManutencaoProgramado(models.Model):
 	# class Meta:
 	# 	app_label = 'custos'
 
-	ItemManutencaoVeiculo = models.ForeignKey(ItemManutencaoVeiculo)
+	itemManutencaoVeiculo = models.ForeignKey(ItemManutencaoVeiculo)
 	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
 	valor = models.FloatField('Valor',default=0)
