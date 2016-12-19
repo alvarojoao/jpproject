@@ -23,7 +23,7 @@ from abastecimento.views import home,balancotable,labels_available,labels_favori
 from django.conf.urls import patterns
 from django.contrib import admin
 from django.http import HttpResponse
-from abastecimento.models import Locacao,Veiculo
+from abastecimento.models import Locacao,Veiculo,ItemManutencaoVeiculo
 from django.forms import modelformset_factory
 from django.forms import ModelForm
 from django import forms
@@ -85,14 +85,15 @@ def save_locacao(request,id):
 
         if form.is_valid():
             locacao = form.save(commit=True)
-            print locacao.data_fim
-            print locacao.veiculo.hodometro_date
-            print locacao.data_fim>=locacao.veiculo.hodometro_date
-            print locacao.hodometroFinal
             if locacao.data_fim>=locacao.veiculo.hodometro_date:
+                hodometro_diff = locacao.hodometroFinal - locacao.veiculo.hodometro
                 locacao.veiculo.hodometro = locacao.hodometroFinal
                 locacao.veiculo.hodometro_date = locacao.data_fim
                 locacao.veiculo.save()
+                itemManutencaoProgramado = ItemManutencaoVeiculo.objects.filter(veiculo__placa=locacao.veiculo.placa)
+                for item in itemManutencaoProgramado:
+                    item.valorAcumulado = item.valorAcumulado + hodometro_diff
+                    item.save()
 
     return redirect('/admin/locacao/')
 
@@ -129,9 +130,10 @@ def get_admin_urls(urls):
 admin_urls = get_admin_urls(admin.site.get_urls())
 admin.site.get_urls = admin_urls
 
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^calendar/', include('calendarium.urls')),
+    # url(r'^calendar/', include('calendarium.urls')),
     url(r'^customgraph/', home),
     url(r'^balancotable/', balancotable),
     url(r'^get_veiculo_km/(?P<id>.+)', get_veiculo_km),

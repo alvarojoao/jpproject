@@ -47,10 +47,10 @@ INSTALLED_APPS = [
     'custos.apps.CustosConfig',
     'django_nvd3',
     'djangobower',
-    'filer',
-    'mptt',
-    'easy_thumbnails',
-    'calendarium'
+    # 'filer',
+    #'mptt'
+    # 'easy_thumbnails',
+    # 'calendarium'
 ]
 
 # Django-bower

@@ -108,20 +108,33 @@ class ManutencaoAcionarFilter(admin.SimpleListFilter):
             return queryset.filter()
 
 
+class ItemManutencaoVeiculoform(forms.ModelForm):
+	def __init__(self, *args, **kwargs):
+		super(ItemManutencaoVeiculoform, self).__init__(*args, **kwargs)
+		self.fields['manutencaoRealizada'].choices = self.fields['manutencaoRealizada'].choices[1:]
+		self.fields['unidade'].choices = self.fields['unidade'].choices[1:]
+
+	class Meta:
+		model = ItemManutencaoVeiculo
+		fields = '__all__'
 
 class ItemManutencaoVeiculoAdmin(admin.ModelAdmin):
-
+	form = ItemManutencaoVeiculoform
 	list_display = ('veiculo','periodoPadrao','valorAcumulado','precisaManutencao')
 	ordering = ('-valorAcumulado',)
 	search_fields = ['material', 'veiculo']
 	list_filter = (ManutencaoAcionarFilter,'veiculo','material','unidade')
+	radio_fields = {"unidade": admin.VERTICAL,"manutencaoRealizada": admin.VERTICAL}
+
 	# def get_query_set(self):
 	#     return super(ItemManutencaoVeiculoAdmin, self).get_query_set().filter(manutencao='Precisa')
 	def precisaManutencao(self,obj):
 		need = obj.precisaManutencao()
+		self.verbose_name = 'Precisa Manutencao'
 		span = " <span class='need' > Sim <span>" if need =='Sim'else " <span class='' > Não <span>" 
 		return span
 	precisaManutencao.allow_tags = True
+	precisaManutencao.short_description = 'Precisa Manutencao'
 	def changelist_view(self, request, extra_context=None):
 	    if not request.GET.has_key('manutencao'):
 	        q = request.GET.copy()
@@ -132,13 +145,16 @@ class ItemManutencaoVeiculoAdmin(admin.ModelAdmin):
 	        request, extra_context=extra_context)
 
 	def save_model(self, request, obj, form, change):
-		if obj.id is not None and change and form.status is not obj.status :
+		if obj.id is not None and change and obj.manutencaoRealizada :
 			a = ItemManutencaoProgramado()
 			a.valor = obj.valor
 			a.itemManutencaoVeiculo = obj
 			a.hodometro = obj.veiculo.hodometro
 			a.veiculo = obj.veiculo
 			a.save()
+			obj.manutencaoRealizada=False
+			obj.valorAcumulado=0
+			obj.save()
 		super(ItemManutencaoVeiculoAdmin, self).save_model(request, obj, form, change)
 
 admin.site.register(ItemManutencaoVeiculo, ItemManutencaoVeiculoAdmin)
@@ -243,7 +259,19 @@ class OperadorAdmin(admin.ModelAdmin):
 
 admin.site.register(Operador, OperadorAdmin)
 
+class Obraform(forms.ModelForm):
+	def __init__(self, *args, **kwargs):
+		super(Obraform, self).__init__(*args, **kwargs)
+		self.fields['status'].choices = self.fields['status'].choices[1:]
+		self.fields['sairnaagenda'].choices = self.fields['sairnaagenda'].choices[1:]
+
+	class Meta:
+		model = Obra
+		fields = '__all__'
+
+
 class ObraAdmin(admin.ModelAdmin):
+	form = Obraform
 	radio_fields = {"status": admin.VERTICAL,"sairnaagenda": admin.VERTICAL}
 
 
