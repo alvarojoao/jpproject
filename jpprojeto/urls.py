@@ -30,7 +30,6 @@ from django import forms
 from django.shortcuts import redirect
 import datetime
 from django.template import Context, Template
-
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 admin.autodiscover()
@@ -48,8 +47,6 @@ class LocacaoForm(ModelForm):
         model = Locacao
         exclude=('criado_date','atualizado_date','hodometro_date')
         readonly = ('hodometroInicial','data_inicio','data_fim')
-
-
 
 def locacao(request,id):
     # return HttpResponse("Hello!")
@@ -76,7 +73,6 @@ def processBalanco(request,veiculo_id,data_in,data_out):
     # ItemManutencaoProgramado
     # ItemManutencaoNaoProgramado
     # Locacao
-
 
 def save_locacao(request,id):
     if id is not None:
