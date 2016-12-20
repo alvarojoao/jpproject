@@ -161,7 +161,7 @@ class ManutencaoVeiculoAdmin(admin.ModelAdmin):
 		if obj.id is not None and change and obj.manutencaoRealizada :
 			a = CustoManutencaoProgramado()
 			a.valor = obj.valor
-			a.itemManutencaoVeiculo = obj
+			a.manutencaoVeiculo = obj
 			a.hodometro = obj.veiculo.hodometro
 			a.veiculo = obj.veiculo
 			a.save()
