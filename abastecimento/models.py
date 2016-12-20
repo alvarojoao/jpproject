@@ -217,7 +217,7 @@ class ManutencaoVeiculo(models.Model):
 		return self.descricao+' '+str(self.periodoPadrao)
 
 	def precisaManutencao(self):
-		return SIM_NAO[self.periodoPadrao < self.valorAcumulado][1]
+		return SIM_NAO[self.periodoPadrao <= self.valorAcumulado][1]
 
 class CustoManutencaoProgramado(models.Model):
 
