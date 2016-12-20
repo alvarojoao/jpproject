@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 
 # Register your models here.
 from django.db import transaction
-from abastecimento.models import Grupo,Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS,ItemManutencao,ItemManutencaoVeiculo,Locacao,ItemManutencaoProgramado,ItemManutencaoNaoProgramado
+from abastecimento.models import Fornecedor,Grupo,Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS,ItemManutencao,ItemManutencaoVeiculo,Locacao,ItemManutencaoProgramado,ItemManutencaoNaoProgramado
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
@@ -30,6 +30,11 @@ from django.db.models import F
 # admin.site.register(Responsavel, ResponsavelAdmin)
 admin.site.site_title = 'Ancar Modulo Administrativo'
 admin.site.site_header = 'Ancar Admin'
+
+class FornecedorAdmin(admin.ModelAdmin):
+	pass
+
+admin.site.register(Fornecedor, FornecedorAdmin)
 
 class GrupoAdmin(admin.ModelAdmin):
 	pass

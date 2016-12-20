@@ -25,11 +25,6 @@ def validate_hodometro_and_veiculo_type(value):
 		)
 
 
-# class Responsavel(User):
-
-# 	def __str__(self):              # __unicode__ on Python 2
-# 		return self.username
-
 class Tipo(models.Model):
 	codigo = models.CharField(max_length=200,primary_key=True)
 	descricao = models.CharField(max_length=200)
@@ -113,7 +108,7 @@ class Fornecedor(models.Model):
 
 class ItemManutencao(models.Model):
 
-	fornecedor = models.ForeignKey(Fornecedor,null=True,default=None)
+	fornecedor = models.ForeignKey(Fornecedor,null=True,blank=True,default=None)
 	grupo = models.ForeignKey(Grupo)
 	descricao = models.CharField(max_length=200)
 	material = models.CharField(max_length=200)
@@ -188,9 +183,9 @@ class Veiculo(models.Model):
 	favorito = models.BooleanField(verbose_name="Favorito no grafico",default=False)
 	# itensManutencao = models.ManyToManyField(ItemManutencaoVeiculo,null=True,blank=True)
 	
-	valor = models.FloatField('Valor')
+	valor = models.FloatField('Valor do frete',help_text="valor em reais")
 	
-	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
+	hodometro = models.IntegerField('Hodômetro/Horimetro',help_text="valor atual do hodometro/horimetro",default=0,validators= [])
 	hodometro_date = models.DateField("Data da atualizacao do hodometro",default=datetime.now, blank=True)
 	criado_date = models.DateField("Data Criada",
 	        auto_now_add=True)
@@ -229,9 +224,6 @@ class ItemManutencaoVeiculo(models.Model):
 
 class ItemManutencaoProgramado(models.Model):
 
-	# class Meta:
-	# 	app_label = 'custos'
-
 	itemManutencaoVeiculo = models.ForeignKey(ItemManutencaoVeiculo)
 	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
@@ -245,8 +237,6 @@ class ItemManutencaoProgramado(models.Model):
 
 class ItemManutencaoNaoProgramado(models.Model):
 
-	# class Meta:
-	# 	app_label = 'custos'
 	ItemManutencao = models.ForeignKey(ItemManutencao)
 	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
@@ -312,8 +302,6 @@ class Abastecimento(models.Model):
 
 
 class Locacao(models.Model):
-	# class Meta:
-	# 	app_label = 'locacao'
 
 	obra = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
