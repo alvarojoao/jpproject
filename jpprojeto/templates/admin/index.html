@@ -5,10 +5,34 @@
 {% block recent_actions  %}
 
 	{% if request.user.is_superuser %}
+		<table class="table table-bordered">
+          <thead>
+            <tr>
+              <th class="title-head-apps">
+                Novas Funcionalidades
+              </th>
+              <th class="search-apps-models">
+              </th>
+            </tr>
+          </thead>
+          <tbody class="list">
+          	<tr class="app-abastecimento bg-colored">
+				<td rowspan="12" class="app-name ">
+					<a href="./abastecimento/abastecimento_grafico/" class="section" title="Abastecimento Graficos"> Abastecimento Graficos </a>  <br>
+			 		<a href="./locacao/" class="section" title="Agenda de Locacao">Agenda de Locação</a> <br>
+			 		<a href="./abastecimento/balanco/" class="section" title="Balanco de custo e lucro">Balanco de custo e lucro</a>
+				</td>
+                <td class="model-name model-abastecimento">
+                 	<a href="./abastecimento/abastecimento_grafico/" class="section" title="Abastecimento Graficos"  style="color: #337ab7!important;"> Abastecimento Graficos </a>  <br>
+			 		<a href="./locacao/" class="section" title="Agenda de Locacao"  style="color: #337ab7!important;">Agenda de Locação</a> <br>
+			 		<a href="./abastecimento/balanco/" class="section" title="Balanco de custo e lucro"  style="color: #337ab7!important;">Balanco de custo e lucro</a>
+                </td>
+          	</tr>
+          </tbody>
+        </table>
+
 	<br>
- 		<a href="./abastecimento/abastecimento_grafico/"> Abastecimento Graficos </a>  <br>
- 		<a href="./locacao/">Agenda de Locacao</a> <br>
- 		<a href="./abastecimento/balanco/">Balanco de custo e lucro</a><br>
+ 		
  		<br><br>
 		 
 		 

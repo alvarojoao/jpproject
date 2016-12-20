@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 
 # Register your models here.
 from django.db import transaction
-from abastecimento.models import Fornecedor,Grupo,Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS,ItemManutencao,ItemManutencaoVeiculo,Locacao,ItemManutencaoProgramado,ItemManutencaoNaoProgramado
+from abastecimento.models import Fornecedor,Grupo,Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS,ItemManutencao,ManutencaoVeiculo,Locacao,CustoManutencaoProgramado,CustoManutencaoNaoProgramado
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
@@ -42,17 +42,17 @@ class GrupoAdmin(admin.ModelAdmin):
 admin.site.register(Grupo, GrupoAdmin)
 
 
-class ItemManutencaoProgramadoAdmin(admin.ModelAdmin):
+class CustoManutencaoProgramadoAdmin(admin.ModelAdmin):
 	pass
 
 
-admin.site.register(ItemManutencaoProgramado, ItemManutencaoProgramadoAdmin)
+admin.site.register(CustoManutencaoProgramado, CustoManutencaoProgramadoAdmin)
 
 
-class ItemManutencaoNaoProgramadoAdmin(admin.ModelAdmin):
+class CustoManutencaoNaoProgramadoAdmin(admin.ModelAdmin):
 	pass
 
-admin.site.register(ItemManutencaoNaoProgramado, ItemManutencaoNaoProgramadoAdmin)
+admin.site.register(CustoManutencaoNaoProgramado, CustoManutencaoNaoProgramadoAdmin)
 
 
 
@@ -113,24 +113,32 @@ class ManutencaoAcionarFilter(admin.SimpleListFilter):
             return queryset.filter()
 
 
-class ItemManutencaoVeiculoform(forms.ModelForm):
+class ManutencaoVeiculoform(forms.ModelForm):
 	def __init__(self, *args, **kwargs):
-		super(ItemManutencaoVeiculoform, self).__init__(*args, **kwargs)
-		self.fields['manutencaoRealizada'].choices = self.fields['manutencaoRealizada'].choices[1:]
+		super(ManutencaoVeiculoform, self).__init__(*args, **kwargs)
+		if kwargs.get('instance',None):
+			self.fields['manutencaoRealizada'].choices = self.fields['manutencaoRealizada'].choices[1:]
 		self.fields['unidade'].choices = self.fields['unidade'].choices[1:]
 
 	class Meta:
-		model = ItemManutencaoVeiculo
+		model = ManutencaoVeiculo
 		fields = '__all__'
 
-class ItemManutencaoVeiculoAdmin(admin.ModelAdmin):
-	form = ItemManutencaoVeiculoform
+class ManutencaoVeiculoAdmin(admin.ModelAdmin):
+	form = ManutencaoVeiculoform
 	list_display = ('veiculo','periodoPadrao','valorAcumulado','precisaManutencao')
 	ordering = ('-valorAcumulado',)
 	search_fields = ['material', 'veiculo']
 	list_filter = (ManutencaoAcionarFilter,'veiculo','material','unidade')
 	radio_fields = {"unidade": admin.VERTICAL,"manutencaoRealizada": admin.VERTICAL}
 
+	def get_form(self, request, obj=None, **kwargs):
+		# Proper kwargs are form, fields, exclude, formfield_callback
+		if obj: # obj is not None, so this is a change page
+			kwargs['exclude'] = []
+		else: # obj is None, so this is an add page
+			kwargs['exclude'] = ['valor', 'manutencaoRealizada',]
+		return super(ItemManutencaoVeiculoAdmin, self).get_form(request, obj, **kwargs)
 	# def get_query_set(self):
 	#     return super(ItemManutencaoVeiculoAdmin, self).get_query_set().filter(manutencao='Precisa')
 	def precisaManutencao(self,obj):
@@ -162,7 +170,7 @@ class ItemManutencaoVeiculoAdmin(admin.ModelAdmin):
 			obj.save()
 		super(ItemManutencaoVeiculoAdmin, self).save_model(request, obj, form, change)
 
-admin.site.register(ItemManutencaoVeiculo, ItemManutencaoVeiculoAdmin)
+admin.site.register(ManutencaoVeiculo, ManutencaoVeiculoAdmin)
 
 
 # from django.db import models

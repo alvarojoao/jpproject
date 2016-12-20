@@ -23,7 +23,7 @@ from abastecimento.views import home,balancotable,labels_available,labels_favori
 from django.conf.urls import patterns
 from django.contrib import admin
 from django.http import HttpResponse
-from abastecimento.models import Locacao,Veiculo,ItemManutencaoVeiculo
+from abastecimento.models import Locacao,Veiculo,ManutencaoVeiculo
 from django.forms import modelformset_factory
 from django.forms import ModelForm
 from django import forms

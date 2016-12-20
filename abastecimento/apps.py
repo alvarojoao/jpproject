@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from django.apps import AppConfig
 
-
 class AbastecimentoConfig(AppConfig):
-    name = 'abastecimento'
+	name = 'abastecimento'
+	verbose_name = 'Ancar Controle'
+

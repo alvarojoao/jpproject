@@ -195,10 +195,7 @@ class Veiculo(models.Model):
 	def __str__(self):
 		return unicode(self.placa)+' - TIPO: '+str(self.tipo)
 
-class ItemManutencaoVeiculo(models.Model):
-
-	# class Meta:
-	# 	app_label = 'equipamento'
+class ManutencaoVeiculo(models.Model):
 
 	itemManutencao = models.ForeignKey(ItemManutencao)
 	# veiculo = models.ForeignKey(Veiculo)
@@ -222,9 +219,9 @@ class ItemManutencaoVeiculo(models.Model):
 	def precisaManutencao(self):
 		return SIM_NAO[self.periodoPadrao < self.valorAcumulado][1]
 
-class ItemManutencaoProgramado(models.Model):
+class CustoManutencaoProgramado(models.Model):
 
-	itemManutencaoVeiculo = models.ForeignKey(ItemManutencaoVeiculo)
+	manutencaoVeiculo = models.ForeignKey(ManutencaoVeiculo)
 	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
 	valor = models.FloatField('Valor',default=0)
@@ -235,7 +232,7 @@ class ItemManutencaoProgramado(models.Model):
 	def __str__(self):
 		return str(self.itemManutencaoVeiculo)+" "+str(self.veiculo)
 
-class ItemManutencaoNaoProgramado(models.Model):
+class CustoManutencaoNaoProgramado(models.Model):
 
 	ItemManutencao = models.ForeignKey(ItemManutencao)
 	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])

@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from abastecimento.models import Locacao,Abastecimento,Posto,Veiculo,ItemManutencaoNaoProgramado,ItemManutencaoProgramado
+from abastecimento.models import Locacao,Abastecimento,Posto,Veiculo,CustoManutencaoNaoProgramado,CustoManutencaoProgramado
 
 # Create your views here.
 from django.core import serializers
@@ -134,8 +134,8 @@ def balancotable(request):
 
 	#Locacoes
 	locacoes = Locacao.objects.filter(data_inicio__range=[start_date, end_date])
-	custonaoprogramado = ItemManutencaoNaoProgramado.objects.filter(criado_date__range=[start_date, end_date])
-	custoprogramadado = ItemManutencaoProgramado.objects.filter(criado_date__range=[start_date, end_date])
+	custonaoprogramado = CustoManutencaoNaoProgramado.objects.filter(criado_date__range=[start_date, end_date])
+	custoprogramadado = CustoManutencaoProgramado.objects.filter(criado_date__range=[start_date, end_date])
 	# if placas:
 	# 	pass
 	# else:
