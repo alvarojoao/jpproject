@@ -159,7 +159,7 @@ class ManutencaoVeiculoAdmin(admin.ModelAdmin):
 
 	def save_model(self, request, obj, form, change):
 		if obj.id is not None and change and obj.manutencaoRealizada :
-			a = ItemManutencaoProgramado()
+			a = CustoManutencaoProgramado()
 			a.valor = obj.valor
 			a.itemManutencaoVeiculo = obj
 			a.hodometro = obj.veiculo.hodometro
