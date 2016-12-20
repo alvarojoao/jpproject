@@ -138,7 +138,7 @@ class ManutencaoVeiculoAdmin(admin.ModelAdmin):
 			kwargs['exclude'] = []
 		else: # obj is None, so this is an add page
 			kwargs['exclude'] = ['valor', 'manutencaoRealizada',]
-		return super(ItemManutencaoVeiculoAdmin, self).get_form(request, obj, **kwargs)
+		return super(ManutencaoVeiculoAdmin, self).get_form(request, obj, **kwargs)
 	# def get_query_set(self):
 	#     return super(ItemManutencaoVeiculoAdmin, self).get_query_set().filter(manutencao='Precisa')
 	def precisaManutencao(self,obj):
@@ -154,7 +154,7 @@ class ManutencaoVeiculoAdmin(admin.ModelAdmin):
 	        q['manutencao'] = 'Precisa'  # default value for status
 	        request.GET = q
 	        request.META['QUERY_STRING'] = request.GET.urlencode()
-	    return super(ItemManutencaoVeiculoAdmin, self).changelist_view(
+	    return super(ManutencaoVeiculoAdmin, self).changelist_view(
 	        request, extra_context=extra_context)
 
 	def save_model(self, request, obj, form, change):
@@ -168,7 +168,7 @@ class ManutencaoVeiculoAdmin(admin.ModelAdmin):
 			obj.manutencaoRealizada=False
 			obj.valorAcumulado=0
 			obj.save()
-		super(ItemManutencaoVeiculoAdmin, self).save_model(request, obj, form, change)
+		super(ManutencaoVeiculoAdmin, self).save_model(request, obj, form, change)
 
 admin.site.register(ManutencaoVeiculo, ManutencaoVeiculoAdmin)
 
