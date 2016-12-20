@@ -210,7 +210,7 @@ class ManutencaoVeiculo(models.Model):
 	manutencaoRealizada = models.BooleanField('Manutencao Realizada',choices=SIM_NAO,default=False,blank=False, null=False)
 	
 
-	criado_date = models.DateField("Data Criada", auto_now_add=True)
+	criado_date = models.DateField("Data Criada",default=datetime.now, blank=True)
 	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
 	
 	def __str__(self):
@@ -226,11 +226,11 @@ class CustoManutencaoProgramado(models.Model):
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
 	valor = models.FloatField('Valor',default=0)
 
-	criado_date = models.DateField("Data Criada", auto_now_add=True,editable=True)
+	criado_date = models.DateField("Data Criada",default=datetime.now, blank=True)
 
 	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
 	def __str__(self):
-		return str(self.itemManutencaoVeiculo)+" "+str(self.veiculo)
+		return str(self.manutencaoVeiculo)+" "+str(self.veiculo)
 
 class CustoManutencaoNaoProgramado(models.Model):
 
@@ -239,7 +239,7 @@ class CustoManutencaoNaoProgramado(models.Model):
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
 	valor = models.FloatField('Valor',default=0)
 
-	criado_date = models.DateField("Data Criada", auto_now_add=True,editable=True)
+	criado_date = models.DateField("Data Criada",default=datetime.now, blank=True)
 	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
 	def __str__(self):
 		return str(self.ItemManutencao)+" "+str(self.veiculo)
