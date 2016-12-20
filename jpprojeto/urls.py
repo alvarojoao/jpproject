@@ -90,8 +90,8 @@ def save_locacao(request,id):
                 locacao.veiculo.hodometro = locacao.hodometroFinal
                 locacao.veiculo.hodometro_date = locacao.data_fim
                 locacao.veiculo.save()
-                itemManutencaoProgramado = ItemManutencaoVeiculo.objects.filter(veiculo__placa=locacao.veiculo.placa)
-                for item in itemManutencaoProgramado:
+                manutencaoProgramados = ManutencaoVeiculo.objects.filter(veiculo__placa=locacao.veiculo.placa)
+                for item in manutencaoProgramados:
                     item.valorAcumulado = item.valorAcumulado + hodometro_diff
                     item.save()
 
