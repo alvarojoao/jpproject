@@ -22,7 +22,6 @@ def home(request):
 	"""
 	home page
 	"""
-	# data = simplejson.dumps(some_data_to_dump)
 	std = request.GET.get('std', False)
 	placas = request.GET.get('placas', None)
 	date_months = request.GET.get('monthsago', 12)
@@ -136,12 +135,6 @@ def balancotable(request):
 	locacoes = Locacao.objects.filter(data_inicio__range=[start_date, end_date])
 	custonaoprogramado = CustoManutencaoNaoProgramado.objects.filter(criado_date__range=[start_date, end_date])
 	custoprogramadado = CustoManutencaoProgramado.objects.filter(criado_date__range=[start_date, end_date])
-	# if placas:
-	# 	pass
-	# else:
-	# 	locacoes = locacoes.filter(veiculo__placa='PPV-1212')
-	# print locacoes
-	# return HttpResponse([], content_type='application/json')
 
 	# #Placas
 	if placas:

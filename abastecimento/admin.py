@@ -21,7 +21,8 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import F
-
+from django.contrib.admin import DateFieldListFilter
+from daterange_filter.filter import DateRangeFilter
 
 # class ResponsavelAdmin(UserAdmin):
 
@@ -317,9 +318,9 @@ class AbastecimentoAdmin(ImportExportMixin, admin.ModelAdmin):
 	
 	form = Abastecimentoform
 
-	list_display = ('id','criado_date','notafiscal','hodometro','quantidade','valor_display','vale', 'responsavel_display','veiculo')
+	list_display = ('id','vale','criado_date','notafiscal','hodometro','quantidade','valor_display', 'responsavel_display','veiculo')
 	search_fields = ['notafiscal', 'veiculo__placa','responsavel__username','posto__nome','observacao']
-	list_filter = ('criado_date','responsavel','veiculo')
+	list_filter = (('criado_date',DateRangeFilter),'responsavel','veiculo')
 	# readonly_fields=('vale','motorista','responsavel','veiculo','posto')
 	def save_model(self, request, obj, form, change):
 		if not request.user.is_superuser:

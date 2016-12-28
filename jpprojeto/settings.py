@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'custos.apps.CustosConfig',
     'django_nvd3',
     'djangobower',
+    'daterange_filter',
     # 'filer',
     #'mptt'
     # 'easy_thumbnails',

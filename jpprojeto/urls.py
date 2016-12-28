@@ -31,6 +31,7 @@ from django.shortcuts import redirect
 import datetime
 from django.template import Context, Template
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.contrib.auth.decorators import login_required
 
 admin.autodiscover()
 from django import template
@@ -48,6 +49,7 @@ class LocacaoForm(ModelForm):
         exclude=('criado_date','atualizado_date','hodometro_date')
         readonly = ('hodometroInicial','data_inicio','data_fim')
 
+@login_required
 def locacao(request,id):
     # return HttpResponse("Hello!")
     locacao = Locacao()
@@ -59,21 +61,18 @@ def locacao(request,id):
 
     return render(request, 'locacao/locacao.html',{u'title':'Locação','site_header':'Ancar Admin','formset': form,'locacaos':locacaos})
 
+@login_required
 def balanco(request,id):
     veiculos = Veiculo.objects.all()
     return render(request, 'custos/balanco.html',{u'title':'balanco','site_header':'Ancar Admin'})
 
+@login_required
 def abastecimento_grafico(request,id):
     # 
     # context = template.RequestContext(request)
     return render(request, 'abastecimento/graficos.html',{u'title':'balanco','site_header':'Ancar Admin'})
 
-def processBalanco(request,veiculo_id,data_in,data_out):
-    pass
-    # ItemManutencaoProgramado
-    # ItemManutencaoNaoProgramado
-    # Locacao
-
+@login_required
 def save_locacao(request,id):
     if id is not None:
         locacao = Locacao.objects.get(pk=id)  # if this is an edit form, replace the author instance with the existing one

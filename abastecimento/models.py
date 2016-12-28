@@ -13,6 +13,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
 )
+from django.utils.encoding import python_2_unicode_compatible
+
 
 from django.core.validators import MinValueValidator, MaxValueValidator
 from datetime import datetime
@@ -25,6 +27,7 @@ def validate_hodometro_and_veiculo_type(value):
 		)
 
 
+@python_2_unicode_compatible
 class Tipo(models.Model):
 	codigo = models.CharField(max_length=200,primary_key=True)
 	descricao = models.CharField(max_length=200)
@@ -32,6 +35,7 @@ class Tipo(models.Model):
 	def __str__(self):
 		return self.codigo+'-'+self.unidade
 
+@python_2_unicode_compatible
 class Familia(models.Model):
 	codigo = models.CharField(max_length=200,primary_key=True)
 	tipo = models.CharField(max_length=200)
@@ -41,6 +45,7 @@ class Familia(models.Model):
 	def __str__(self):
 		return self.codigo
 
+@python_2_unicode_compatible
 class Marca(models.Model):
 	
 	# class Meta:
@@ -55,6 +60,7 @@ UNIDADE_VEICULO = (
 	('Hr', 'Horimetro')
 )
 
+@python_2_unicode_compatible
 class Modelo(models.Model):
 
 	# class Meta:
@@ -66,6 +72,7 @@ class Modelo(models.Model):
 	def __str__(self):
 		return self.nome
 
+@python_2_unicode_compatible
 class Cor(models.Model):
 
 	# class Meta:
@@ -74,6 +81,7 @@ class Cor(models.Model):
 	def __str__(self):
 		return self.cor
 
+@python_2_unicode_compatible
 class Eixo(models.Model):
 
 	# class Meta:
@@ -83,11 +91,13 @@ class Eixo(models.Model):
 	def __str__(self):
 		return self.numeroPneus
 
+@python_2_unicode_compatible
 class Grupo(models.Model):
 	nome = models.CharField(max_length=100)
 	def __str__(self):
 		return self.nome
 
+@python_2_unicode_compatible
 class Fornecedor(models.Model):
 
 	codigo = models.CharField(max_length=200,primary_key=True)
@@ -106,6 +116,7 @@ class Fornecedor(models.Model):
 	def __str__(self):
 		return self.nome+' - cnpj: '+(str(self.cnpj) if self.cnpj else 'Nao Tem')
 
+@python_2_unicode_compatible
 class ItemManutencao(models.Model):
 
 	fornecedor = models.ForeignKey(Fornecedor,null=True,blank=True,default=None)
@@ -119,6 +130,7 @@ class ItemManutencao(models.Model):
 		return self.material
 
 
+@python_2_unicode_compatible
 class Operador(models.Model):
 	nome = models.CharField(max_length=200,primary_key=True)
 	cpf = models.CharField(max_length=20,blank=True, null=True)
@@ -129,6 +141,7 @@ class Operador(models.Model):
 		return self.nome+' - cpf: '+(str(self.cpf) if self.cpf else 'Nao Tem')
 
 # Create your models here.
+@python_2_unicode_compatible
 class Posto(models.Model):
 	nome = models.CharField(max_length=200,primary_key=True)
 	cnpj = models.CharField(max_length=20,blank=True, null=True)
@@ -157,6 +170,7 @@ SIM_NAO = (
 	(True, 'Sim')
 )
 
+@python_2_unicode_compatible
 class Obra(models.Model):
 	nome = models.CharField(max_length=200,primary_key=True)
 	status = models.BooleanField('Status',choices=SIM_NAO,default=False,blank=False, null=False)
@@ -171,6 +185,7 @@ class Obra(models.Model):
 
 
 
+@python_2_unicode_compatible
 class Veiculo(models.Model):
 	# class Meta:
 	# 	app_label = 'equipamento'
@@ -192,9 +207,13 @@ class Veiculo(models.Model):
 	atualizado_date = models.DateTimeField("Data Atualizado",
 	        blank=True, null=True,auto_now=True)
 
+	class Meta:
+		ordering = ['placa',]
+
 	def __str__(self):
 		return unicode(self.placa)+' - TIPO: '+str(self.tipo)
 
+@python_2_unicode_compatible
 class ManutencaoVeiculo(models.Model):
 
 	itemManutencao = models.ForeignKey(ItemManutencao)
@@ -219,6 +238,7 @@ class ManutencaoVeiculo(models.Model):
 	def precisaManutencao(self):
 		return SIM_NAO[self.periodoPadrao <= self.valorAcumulado][1]
 
+@python_2_unicode_compatible
 class CustoManutencaoProgramado(models.Model):
 
 	manutencaoVeiculo = models.ForeignKey(ManutencaoVeiculo)
@@ -232,6 +252,7 @@ class CustoManutencaoProgramado(models.Model):
 	def __str__(self):
 		return str(self.manutencaoVeiculo)+" "+str(self.veiculo)
 
+@python_2_unicode_compatible
 class CustoManutencaoNaoProgramado(models.Model):
 
 	ItemManutencao = models.ForeignKey(ItemManutencao)
@@ -257,6 +278,7 @@ TIPOS_COMBUSTIVEL = (
 
 
 
+@python_2_unicode_compatible
 class Abastecimento(models.Model):
 	vale = models.CharField(max_length=50,verbose_name="Vale/Cupom",blank=True, null=True)
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
@@ -271,13 +293,13 @@ class Abastecimento(models.Model):
 
 	notafiscal = models.CharField(max_length=20,blank=True, null=True)
 
-	criado_date = models.DateTimeField("Data Abastecimento")
+	criado_date = models.DateTimeField("Data Abastecimento",default=datetime.now)
 	atualizado_date = models.DateTimeField("Data Abastecimento Atualizado",
 			blank=True, null=True,auto_now=True)
 	observacao = models.TextField( blank=True, null=True)
 
 	def __str__(self):
-		return unicode(self.id)
+		return str(self.id)
 
 	# This method will be used in the admin display
 	def valor_display(self):
@@ -298,6 +320,7 @@ class Abastecimento(models.Model):
 
 
 
+@python_2_unicode_compatible
 class Locacao(models.Model):
 
 	obra = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
@@ -321,7 +344,10 @@ class Locacao(models.Model):
 	atualizado_date = models.DateTimeField("Data Atualizado",
 	        blank=True, null=True,auto_now=True)
 	def title(self):
-		return str(self.veiculo)+' '+str(self.obra)+' HorasProdutivas:'+str(self.horasprodutivo-self.horasmanutencaoPreventiva-self.horasmanutencaoCorretiva)
+		return unicode(self.veiculo)+' '+unicode(self.obra)+' HorasProdutivas:'+unicode(self.horasprodutivo-self.horasmanutencaoPreventiva-self.horasmanutencaoCorretiva)
+
+	def __str__(self):	
+		return str(self.id)
 
 
 
