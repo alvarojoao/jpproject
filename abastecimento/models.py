@@ -14,11 +14,15 @@ from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
 )
 
+from django.utils.encoding import python_2_unicode_compatible
+from datetime import datetime
+
 # class Responsavel(User):
 
 # 	def __str__(self):              # __unicode__ on Python 2
 # 		return self.username
 
+@python_2_unicode_compatible
 class Obra(models.Model):
 	nome = models.CharField(max_length=200,primary_key=True)
 	criado_date = models.DateField("Data Criada", auto_now_add=True)
@@ -28,6 +32,7 @@ class Obra(models.Model):
 		return self.nome
 
 
+@python_2_unicode_compatible
 class Operador(models.Model):
 	nome = models.CharField(max_length=200,primary_key=True)
 	cpf = models.CharField(max_length=20,blank=True, null=True)
@@ -38,6 +43,7 @@ class Operador(models.Model):
 		return self.nome+' - cpf: '+(str(self.cpf) if self.cpf else 'Nao Tem')
 
 # Create your models here.
+@python_2_unicode_compatible
 class Posto(models.Model):
 	nome = models.CharField(max_length=200,primary_key=True)
 	cnpj = models.CharField(max_length=20,blank=True, null=True)
@@ -62,6 +68,7 @@ MAQUINA_VEICULO = (
 	(True, 'Veiculo')
 )
 
+@python_2_unicode_compatible
 class Veiculo(models.Model):
 	placa = models.CharField(verbose_name="Placa/Codigo Interno",max_length=30,primary_key=True)
 	
@@ -73,6 +80,9 @@ class Veiculo(models.Model):
 	        auto_now_add=True)
 	atualizado_date = models.DateTimeField("Data Atualizado",
 	        blank=True, null=True,auto_now=True)
+
+	def Meta(self):
+		ordering = ['placa',]
 
 	def __str__(self):
 		return unicode(self.placa)+' - TIPO: '+str(self.tipo)
@@ -96,6 +106,7 @@ def validate_hodometro_and_veiculo_type(value):
 		)
 
 
+@python_2_unicode_compatible
 class Abastecimento(models.Model):
 	vale = models.CharField(max_length=50,verbose_name="Vale/Cupom",blank=True, null=True)
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
@@ -110,7 +121,7 @@ class Abastecimento(models.Model):
 
 	notafiscal = models.CharField(max_length=20,blank=True, null=True)
 
-	criado_date = models.DateTimeField("Data Abastecimento")
+	criado_date = models.DateTimeField("Data Abastecimento",default=datetime.now)
 	atualizado_date = models.DateTimeField("Data Abastecimento Atualizado",
 			blank=True, null=True,auto_now=True)
 	observacao = models.TextField( blank=True, null=True)

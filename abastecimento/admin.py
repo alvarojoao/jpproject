@@ -15,12 +15,13 @@ from django.db import transaction
 from abastecimento.models import Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS
 from django import forms
 from django.utils.translation import ugettext_lazy as _
+from daterange_filter.filter import DateRangeFilter
 
 # class ResponsavelAdmin(UserAdmin):
 
 # 	search_fields = ['username']
-
 # admin.site.register(Responsavel, ResponsavelAdmin)
+
 admin.site.site_title = 'Ancar Modulo Administrativo'
 admin.site.site_header = 'Ancar Admin'
 
@@ -133,10 +134,9 @@ class AbastecimentoAdmin(ImportExportMixin, admin.ModelAdmin):
 	resource_class = AbastecimentoResource
 	
 	form = Abastecimentoform
-
-	list_display = ('id','criado_date','notafiscal','hodometro','quantidade','valor_display','vale', 'responsavel_display','veiculo')
+	list_display = ('id','vale','criado_date','notafiscal','hodometro','quantidade','valor_display', 'responsavel_display','veiculo')
 	search_fields = ['notafiscal', 'veiculo__placa','responsavel__username','posto__nome','observacao']
-	list_filter = ('criado_date','posto','obra','responsavel','veiculo')
+	list_filter = (('criado_date',DateRangeFilter),'responsavel','veiculo')
 	# readonly_fields=('vale','motorista','responsavel','veiculo','posto')
 	def save_model(self, request, obj, form, change):
 		if not request.user.is_superuser:
