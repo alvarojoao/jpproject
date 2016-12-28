@@ -81,9 +81,9 @@ class Veiculo(models.Model):
 	atualizado_date = models.DateTimeField("Data Atualizado",
 	        blank=True, null=True,auto_now=True)
 
-	def Meta(self):
+	class Meta:
 		ordering = ['placa',]
-
+	
 	def __str__(self):
 		return unicode(self.placa)+' - TIPO: '+str(self.tipo)
 
