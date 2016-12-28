@@ -39,6 +39,9 @@ class Operador(models.Model):
 	atualizado_date = models.DateTimeField("Data Atualizado",
 	        blank=True, null=True,auto_now=True)
 
+	class Meta:
+		ordering = ['nome',]
+		
 	def __str__(self):
 		return self.nome+' - cpf: '+(str(self.cpf) if self.cpf else 'Nao Tem')
 
