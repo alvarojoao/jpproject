@@ -198,7 +198,8 @@ class Veiculo(models.Model):
 	favorito = models.BooleanField(verbose_name="Favorito no grafico",default=False)
 	# itensManutencao = models.ManyToManyField(ItemManutencaoVeiculo,null=True,blank=True)
 	
-	valor = models.FloatField('Valor do frete',help_text="valor em reais")
+	valor = models.FloatField('Valor da hora do veiculo',help_text="valor em reais")
+	horasminimas = models.FloatField('Horas minimas por dia',default=0,help_text="valor em horas")
 	
 	hodometro = models.IntegerField('Hodômetro/Horimetro',help_text="valor atual do hodometro/horimetro",default=0,validators= [])
 	hodometro_date = models.DateField("Data da atualizacao do hodometro",default=datetime.now, blank=True)
@@ -252,15 +253,21 @@ class CustoManutencaoProgramado(models.Model):
 	def __str__(self):
 		return str(self.manutencaoVeiculo)+" "+str(self.veiculo)
 
+DIRETO_INDIRETO = (
+	('DIRETO', 'DIRETO'),
+	('INDIRETO', 'INDIRETO'),
+)
+
 @python_2_unicode_compatible
-class CustoManutencaoNaoProgramado(models.Model):
+class Custo(models.Model):
 
-	ItemManutencao = models.ForeignKey(ItemManutencao)
-	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
-	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
+	ItemManutencao = models.ForeignKey(ItemManutencao, blank=True, null=True)
 	valor = models.FloatField('Valor',default=0)
-
 	criado_date = models.DateField("Data Criada",default=datetime.now, blank=True)
+	diretoOrIndireto = models.CharField('tipo de custo',max_length=10,default='INDIRETO', choices=DIRETO_INDIRETO)
+
+	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
+	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento",default=None, blank=True, null=True)
 	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
 	def __str__(self):
 		return str(self.ItemManutencao)+" "+str(self.veiculo)
@@ -275,7 +282,6 @@ TIPOS_COMBUSTIVEL = (
 	('ARLA', 'ARLA'),
 	('LUB', 'LUB'),
 )
-
 
 
 @python_2_unicode_compatible
@@ -301,6 +307,7 @@ class Abastecimento(models.Model):
 	def __str__(self):
 		return str(self.id)
 
+
 	# This method will be used in the admin display
 	def valor_display(self):
 		# Normally, you would return this:
@@ -315,6 +322,7 @@ class Abastecimento(models.Model):
 		# but a decimal field will display itself correctly
 		# so we can just do this:
 		return self.responsavel.username
+
 
 
 
@@ -345,6 +353,8 @@ class Locacao(models.Model):
 	        blank=True, null=True,auto_now=True)
 	def title(self):
 		return unicode(self.veiculo)+' '+unicode(self.obra)+' HorasProdutivas:'+unicode(self.horasprodutivo-self.horasmanutencaoPreventiva-self.horasmanutencaoCorretiva)
+	def placa(self):
+		return unicode(self.veiculo.placa)
 
 	def __str__(self):	
 		return str(self.id)

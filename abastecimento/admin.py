@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 
 # Register your models here.
 from django.db import transaction
-from abastecimento.models import Fornecedor,Grupo,Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS,ItemManutencao,ManutencaoVeiculo,Locacao,CustoManutencaoProgramado,CustoManutencaoNaoProgramado
+from abastecimento.models import Fornecedor,Grupo,Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS,ItemManutencao,ManutencaoVeiculo,Locacao,CustoManutencaoProgramado,Custo
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
@@ -47,21 +47,22 @@ class CustoManutencaoProgramadoAdmin(admin.ModelAdmin):
 	pass
 
 
-admin.site.register(CustoManutencaoProgramado, CustoManutencaoProgramadoAdmin)
+# admin.site.register(CustoManutencaoProgramado, CustoManutencaoProgramadoAdmin)
 
 
-class CustoManutencaoNaoProgramadoAdmin(admin.ModelAdmin):
+class CustoAdmin(admin.ModelAdmin):
+	radio_fields = {"diretoOrIndireto": admin.VERTICAL}
+
+	class Media:
+		js = ('/static/js/hide_attribute.js',)
 	pass
 
-admin.site.register(CustoManutencaoNaoProgramado, CustoManutencaoNaoProgramadoAdmin)
+admin.site.register(Custo, CustoAdmin)
 
 
 
 
 class ItemManutencaoAdmin(admin.ModelAdmin):
-	class  Meta:
-		proxy = True
-		app_label = 'equipamento'
 	pass
 
 admin.site.register(ItemManutencao, ItemManutencaoAdmin)
