@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 
 # Register your models here.
 from django.db import transaction
-from abastecimento.models import Fornecedor,Grupo,Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS,ItemManutencao,ManutencaoVeiculo,Locacao,CustoManutencaoProgramado,Custo
+from abastecimento.models import UNIDADE_VEICULO,Fornecedor,Grupo,Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS,ItemManutencao,ManutencaoVeiculo,ManutencaoRealizada,Locacao,Custo
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
@@ -43,11 +43,11 @@ class GrupoAdmin(admin.ModelAdmin):
 admin.site.register(Grupo, GrupoAdmin)
 
 
-class CustoManutencaoProgramadoAdmin(admin.ModelAdmin):
+class ManutencaoRealizadaAdmin(admin.ModelAdmin):
 	pass
 
 
-# admin.site.register(CustoManutencaoProgramado, CustoManutencaoProgramadoAdmin)
+admin.site.register(ManutencaoRealizada, ManutencaoRealizadaAdmin)
 
 
 class CustoAdmin(admin.ModelAdmin):
@@ -120,26 +120,47 @@ class ManutencaoVeiculoform(forms.ModelForm):
 		super(ManutencaoVeiculoform, self).__init__(*args, **kwargs)
 		if kwargs.get('instance',None):
 			self.fields['manutencaoRealizada'].choices = self.fields['manutencaoRealizada'].choices[1:]
-		self.fields['unidade'].choices = self.fields['unidade'].choices[1:]
-
+		# self.fields['unidade'].choices = self.fields['unidade'].choices[1:]
+		
 	class Meta:
 		model = ManutencaoVeiculo
 		fields = '__all__'
+		
+		# def clean(self):
+		# 	cleaned_data = self.cleaned_data
+
+		# 	manutencaoRealizada = self.cleaned_data.get('manutencaoRealizada',None)
+		# 	periodoPadrao = self.cleaned_data.get('periodoPadrao',None)
+		# 	valorAcumulado = self.cleaned_data.get('valorAcumulado',None)
+		# 	print 'manutencaoRealizada',manutencaoRealizada,'periodoPadrao',periodoPadrao,'valorAcumulado',valorAcumulado
+		# 	if manutencaoRealizada and periodoPadrao is not None and valorAcumulado is not None and  periodoPadrao > valorAcumulado:
+		# 		msg = _('Valor Acumulado %s não pode ser inferior a %s'%(valorAcumulado,periodoPadrao))
+		# 		self._errors["valorAcumulado"] = self.error_class([msg])
+		# 		del cleaned_data["valorAcumulado"]
+		# 		# raise forms.ValidationError(
+		# 		# 			_('Valor %(value)s Invalido de Hodometro/Horimetro   para veiculos do tipo %(tipo)s'),
+		# 		# 			params={'value': hodometro,'tipo':veiculo.tipo},
+		# 		# 		)
+		# 	return cleaned_data
 
 class ManutencaoVeiculoAdmin(admin.ModelAdmin):
+	class Media:
+		js = ('/static/js/confirm_manutencao.js',)
+
 	form = ManutencaoVeiculoform
 	list_display = ('veiculo','periodoPadrao','valorAcumulado','precisaManutencao')
 	ordering = ('-valorAcumulado',)
 	search_fields = ['material', 'veiculo']
-	list_filter = (ManutencaoAcionarFilter,'veiculo','material','unidade')
+	list_filter = (ManutencaoAcionarFilter,'veiculo','unidade','material')
 	radio_fields = {"unidade": admin.VERTICAL,"manutencaoRealizada": admin.VERTICAL}
-
+	# exclude = ('',)
 	def get_form(self, request, obj=None, **kwargs):
 		# Proper kwargs are form, fields, exclude, formfield_callback
 		if obj: # obj is not None, so this is a change page
 			kwargs['exclude'] = []
 		else: # obj is None, so this is an add page
 			kwargs['exclude'] = ['valor', 'manutencaoRealizada',]
+		kwargs['exclude'] = kwargs['exclude']+ ['unidade',]
 		return super(ManutencaoVeiculoAdmin, self).get_form(request, obj, **kwargs)
 	# def get_query_set(self):
 	#     return super(ItemManutencaoVeiculoAdmin, self).get_query_set().filter(manutencao='Precisa')
@@ -158,11 +179,12 @@ class ManutencaoVeiculoAdmin(admin.ModelAdmin):
 	        request.META['QUERY_STRING'] = request.GET.urlencode()
 	    return super(ManutencaoVeiculoAdmin, self).changelist_view(
 	        request, extra_context=extra_context)
-
+	
 	def save_model(self, request, obj, form, change):
-		if obj.id is not None and change and obj.manutencaoRealizada :
-			a = CustoManutencaoProgramado()
-			a.valor = obj.valor
+		if obj.id is None:
+			obj.unidade = UNIDADE_VEICULO[1][1] if obj.veiculo.isVeiculo else UNIDADE_VEICULO[2][1]
+		elif obj.id is not None and change and obj.manutencaoRealizada  :
+			a = ManutencaoRealizada()
 			a.manutencaoVeiculo = obj
 			a.hodometro = obj.veiculo.hodometro
 			a.veiculo = obj.veiculo
@@ -170,6 +192,7 @@ class ManutencaoVeiculoAdmin(admin.ModelAdmin):
 			obj.manutencaoRealizada=False
 			obj.valorAcumulado=0
 			obj.save()
+
 		super(ManutencaoVeiculoAdmin, self).save_model(request, obj, form, change)
 
 admin.site.register(ManutencaoVeiculo, ManutencaoVeiculoAdmin)

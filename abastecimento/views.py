@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from abastecimento.models import Locacao,Abastecimento,Posto,Veiculo,Custo,CustoManutencaoProgramado
+from abastecimento.models import Locacao,Abastecimento,Posto,Veiculo,Custo
 
 # Create your views here.
 from django.core import serializers

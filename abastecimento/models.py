@@ -114,7 +114,7 @@ class Fornecedor(models.Model):
 	        blank=True, null=True,auto_now=True)
 
 	def __str__(self):
-		return self.nome+' - cnpj: '+(str(self.cnpj) if self.cnpj else 'Nao Tem')
+		return self.nomeFantasia+' - cnpj: '+(str(self.cnpj) if self.cnpj else 'Nao Tem')
 
 @python_2_unicode_compatible
 class ItemManutencao(models.Model):
@@ -218,15 +218,15 @@ class Veiculo(models.Model):
 class ManutencaoVeiculo(models.Model):
 
 	itemManutencao = models.ForeignKey(ItemManutencao)
+	quantidade = models.IntegerField('Quantidade de itens',default=0)
+	material = models.CharField(max_length=200)
 	# veiculo = models.ForeignKey(Veiculo)
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
 	descricao = models.CharField(max_length=200)
-	material = models.CharField(max_length=200)
 	periodoPadrao = models.IntegerField('Horas ou Kilometros para cada troca',default=0)
-	quantidade = models.IntegerField('Quantidade de itens',default=0)
 	valorAcumulado = models.IntegerField('Horas ou Kilometros ja registrado',help_text="esse valor acumula em cada locacao o valor de km ou horas acumulados para esse item de troca de manutenção",default=0)
+
 	unidade = models.CharField(max_length=3, choices=UNIDADE_VEICULO,blank=True, null=True)
-	valor = models.FloatField('Valor Em Reais',help_text="esse campo só é usado quando ocorrer a manutenção e o usuario for realizar a baixa.",default=0)
 	manutencaoRealizada = models.BooleanField('Manutencao Realizada',choices=SIM_NAO,default=False,blank=False, null=False)
 	
 
@@ -240,12 +240,11 @@ class ManutencaoVeiculo(models.Model):
 		return SIM_NAO[self.periodoPadrao <= self.valorAcumulado][1]
 
 @python_2_unicode_compatible
-class CustoManutencaoProgramado(models.Model):
+class ManutencaoRealizada(models.Model):
 
 	manutencaoVeiculo = models.ForeignKey(ManutencaoVeiculo)
 	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
-	valor = models.FloatField('Valor',default=0)
 
 	criado_date = models.DateField("Data Criada",default=datetime.now, blank=True)
 
@@ -265,7 +264,7 @@ class Custo(models.Model):
 	valor = models.FloatField('Valor',default=0)
 	criado_date = models.DateField("Data Criada",default=datetime.now, blank=True)
 	diretoOrIndireto = models.CharField('tipo de custo',max_length=10,default='INDIRETO', choices=DIRETO_INDIRETO)
-
+	
 	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento",default=None, blank=True, null=True)
 	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
