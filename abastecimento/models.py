@@ -169,6 +169,10 @@ SIM_NAO = (
 	(False, 'Não'),
 	(True, 'Sim')
 )
+ABERTA_FECHADA = (
+	(False, 'Aberta'),
+	(True, 'Fechada')
+)
 
 @python_2_unicode_compatible
 class Obra(models.Model):
@@ -246,11 +250,49 @@ class ManutencaoRealizada(models.Model):
 	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
 
+	executado = models.BooleanField('Executado',choices=SIM_NAO,default=False,blank=False, null=False)
+
 	criado_date = models.DateField("Data Criada",default=datetime.now, blank=True)
 
 	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
 	def __str__(self):
 		return str(self.manutencaoVeiculo)+" "+str(self.veiculo)
+
+
+@python_2_unicode_compatible
+class ManutencaoCorretivaRealizada(models.Model):
+	itemManutencao = models.ForeignKey(ItemManutencao)
+	descricao = models.CharField(max_length=200)
+	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
+	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
+
+	executado = models.BooleanField('Executado',choices=SIM_NAO,default=False,blank=False, null=False)
+
+	criado_date = models.DateField("Data Criada",default=datetime.now, blank=True)
+
+	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
+	def __str__(self):
+		return str(self.manutencaoVeiculo)+" "+str(self.veiculo)
+
+
+@python_2_unicode_compatible
+class OrdemServico(models.Model):
+	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
+	responsavel = models.ForeignKey(User,verbose_name="Responsável pelo abastecimento")
+	materiais = models.ManyToManyField(ItemManutencao,null=True,blank=True)
+
+	manutencaoRealizadas = models.ManyToManyField(ManutencaoRealizada,null=True,blank=True)
+	manutencaoCorretivaRealizadas = models.ManyToManyField(ManutencaoCorretivaRealizada,null=True,blank=True)
+	observacao = models.TextField( blank=True, null=True)
+
+	fechada = models.BooleanField('Executado',choices=ABERTA_FECHADA,default=False,blank=False, null=False)
+
+	criado_date = models.DateField("Data Criada",default=datetime.now, blank=True)
+
+	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
+	def __str__(self):
+		return str(self.manutencaoVeiculo)+" "+str(self.veiculo)
+
 
 DIRETO_INDIRETO = (
 	('DIRETO', 'DIRETO'),
@@ -357,9 +399,6 @@ class Locacao(models.Model):
 
 	def __str__(self):	
 		return str(self.id)
-
-
-
 
 
 
