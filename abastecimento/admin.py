@@ -9,6 +9,8 @@ from django.contrib.auth.admin import UserAdmin
 from import_export.admin import ImportExportMixin, ImportExportModelAdmin
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
+from django.contrib.admin.widgets import AdminURLFieldWidget
+from django.db.models import URLField
 
 # Register your models here.
 from django.db import transaction
@@ -130,14 +132,29 @@ class Abastecimentoform(forms.ModelForm):
 			# 		)
 		return cleaned_data
 
+
 class AbastecimentoAdmin(ImportExportMixin, admin.ModelAdmin):
 	resource_class = AbastecimentoResource
 	
 	form = Abastecimentoform
-	list_display = ('id','vale','criado_date','notafiscal','hodometro','quantidade','valor_display', 'responsavel_display','veiculo')
+	list_display = ('id','notafiscal','vale','criado_date','hodometro','quantidade','valor_display', 'responsavel_display','veiculo')
 	search_fields = ['notafiscal', 'veiculo__placa','responsavel__username','posto__nome','observacao']
-	list_filter = (('criado_date',DateRangeFilter),'responsavel','veiculo')
+	list_filter = (('criado_date',DateRangeFilter),'posto','veiculo')
+	list_editable = ('notafiscal',)
 	# readonly_fields=('vale','motorista','responsavel','veiculo','posto')
+	
+	class Media:
+ 		js = (
+ 			'js/abastecimentoAdmin.js',
+ 			);
+ 		css = {
+	      'all': ('/static/css/new_abastecimento.css',) 
+	    }
+
+	def __init__(self, *args, **kwargs):
+		super(AbastecimentoAdmin, self).__init__(*args, **kwargs)
+
+
 	def save_model(self, request, obj, form, change):
 		if not request.user.is_superuser:
 			if obj.id is None:
