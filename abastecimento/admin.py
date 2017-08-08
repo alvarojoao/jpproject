@@ -15,17 +15,15 @@ from django.db import transaction
 from abastecimento.models import UNIDADE_VEICULO,Fornecedor,Grupo,Abastecimento,Posto,Veiculo,Operador,Obra,TIPO_VEICULOS,ItemManutencao,ManutencaoVeiculo,ManutencaoRealizada,Locacao,Custo
 from django import forms
 from django.utils.translation import ugettext_lazy as _
-
+from abastecimento.models import OrdemServico,ManutencaoCorretivaRealizada
 from django.conf.urls import patterns
 from django.contrib import admin
 from django.http import HttpResponse
-from django.utils.translation import ugettext_lazy as _
 from django.db.models import F
 from django.contrib.admin import DateFieldListFilter
 from daterange_filter.filter import DateRangeFilter
 
 # class ResponsavelAdmin(UserAdmin):
-
 # 	search_fields = ['username']
 
 # admin.site.register(Responsavel, ResponsavelAdmin)
@@ -42,12 +40,108 @@ class GrupoAdmin(admin.ModelAdmin):
 
 admin.site.register(Grupo, GrupoAdmin)
 
+class ManutencaoRealizadaForm(forms.ModelForm):
+	def __init__(self, *args, **kwargs):
+		super(ManutencaoRealizadaForm, self).__init__(*args, **kwargs)
+		self.fields['executado'].choices = self.fields['executado'].choices[1:]
+
+	class Meta:
+		model = ManutencaoRealizada
+		fields = '__all__'
 
 class ManutencaoRealizadaAdmin(admin.ModelAdmin):
+	form = ManutencaoRealizadaForm
+	radio_fields = {"executado": admin.VERTICAL}
+	readonly_fields=('ordemServico',)
+
+admin.site.register(ManutencaoRealizada, ManutencaoRealizadaAdmin)
+
+
+class OrdemServicoForm(forms.ModelForm):
+	materials_select = forms.MultipleChoiceField([],required=False,
+		# widget=forms.Select(attrs={'disabled':'true'})
+		)
+
+
+	def __init__(self, *args, **kwargs):
+		super(OrdemServicoForm, self).__init__(*args, **kwargs)
+		self.fields['fechada'].choices = self.fields['fechada'].choices[1:]
+		materials = []
+		# materials.append((m.itemManutencao,m.quantidade))
+		# print self.fields['manutencaoRealizadas'].queryset[0].manutencaoVeiculo
+		# [  for m in self.fields['manutencaoRealizadas'].queryset]
+		[materials.append(("manutencaoRealizadas-"+str(m.manutencaoVeiculo.itemManutencao.id), "manutencaoRealizadas-"+str(m.manutencaoVeiculo.itemManutencao)+" "+str(m.manutencaoVeiculo.quantidade))) for m in self.fields['manutencaoRealizadas'].queryset]
+		[materials.append(("manutencaoCorretivaRealizadas-"+str(m.itemManutencao.id), "manutencaoCorretivaRealizadas-"+str(m.itemManutencao)+" "+str(m.quantidade))) for m in self.fields['manutencaoCorretivaRealizadas'].queryset]
+		
+		self.fields['materials_select'].choices = materials
+	class Media:
+		model = OrdemServico
+		fields = '__all__'
+
+
+class OrdemServicoAdmin(admin.ModelAdmin):
+	form = OrdemServicoForm
+	radio_fields = {"fechada": admin.VERTICAL}
+	filter_horizontal = ('manutencaoRealizadas','manutencaoCorretivaRealizadas',)
+	class Media:
+		js = ('/static/js/hide_ordemservico_multiplechoice.js',)
+		css = {
+	      'all': ('/static/css/new_css.css',) 
+	    }
+
+	def save_model(self, request, obj, form, change):
+		
+		# print request.POST.dict
+		print ' '.join(i for i in request.POST.getlist('manutencaoRealizadas'))
+		manutencaoRealizadas = ManutencaoRealizada.objects.filter(id__in=request.POST.getlist('manutencaoRealizadas'))
+		manutencaoCorretivaRealizadas = ManutencaoCorretivaRealizada.objects.filter(id__in=request.POST.getlist('manutencaoCorretivaRealizadas'))
+		# print manutencaoRealizadas
+		# print manutencaoCorretivaRealizadas
+		super(OrdemServicoAdmin, self).save_model(request, obj, form, change)
+		for m in manutencaoRealizadas:
+			m.ordemServico = obj
+			m.save()
+
+		for m in manutencaoCorretivaRealizadas:
+			m.ordemServico = obj
+			m.save()
+
+
+	def delete_model(self, request, obj):
+		for m in obj.manutencaoRealizadas.filter():
+			m.ordemServico = None
+			m.save()
+
+		for m in obj.manutencaoCorretivaRealizadas.filter():
+			m.ordemServico = None
+			m.save()
+
+		super(OrdemServicoAdmin, self).delete_model(request, obj)
+
+admin.site.register(OrdemServico, OrdemServicoAdmin)
+
+class ManutencaoCorretivaRealizadaForm(forms.ModelForm):
+	def __init__(self, *args, **kwargs):
+		super(ManutencaoCorretivaRealizadaForm, self).__init__(*args, **kwargs)
+		self.fields['executado'].choices = self.fields['executado'].choices[1:]
+
+	class Meta:
+		model = ManutencaoCorretivaRealizada
+		fields = '__all__'
+
+
+class ManutencaoCorretivaRealizadaAdmin(admin.ModelAdmin):
+	form = ManutencaoCorretivaRealizadaForm
+	
+	radio_fields = {"executado": admin.VERTICAL}
+	readonly_fields=('ordemServico',)
+	
 	pass
 
 
-admin.site.register(ManutencaoRealizada, ManutencaoRealizadaAdmin)
+admin.site.register(ManutencaoCorretivaRealizada, ManutencaoCorretivaRealizadaAdmin)
+
+
 
 
 class CustoAdmin(admin.ModelAdmin):
@@ -86,8 +180,8 @@ class ManutencaoAcionarFilter(admin.SimpleListFilter):
         """
         return (
             ('Todos', _('Todos')),
-            ('Precisa', _('manutencao')),
-            ('NaoPrecisa', _('sem manutencao')),
+            ('Precisa', _('Manutenção Agendada')),
+            ('NaoPrecisa', _('Sem Manutenção Agendada')),
         )
 
 	def choices(self, changelist):

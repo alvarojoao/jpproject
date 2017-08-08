@@ -70,7 +70,7 @@ class Modelo(models.Model):
 	descricao = models.CharField(max_length=200)
 	unidade = models.CharField(max_length=3, choices=UNIDADE_VEICULO,blank=True, null=True)
 	def __str__(self):
-		return self.nome
+		return self.nome+"-"+str(marca)
 
 @python_2_unicode_compatible
 class Cor(models.Model):
@@ -169,10 +169,26 @@ SIM_NAO = (
 	(False, 'Não'),
 	(True, 'Sim')
 )
+
+ACAO = (
+	('VERIFICAR', 'Verificar'),
+	('TROCAR', 'Trocar'),
+	('LIMPAR', 'Limpar')
+)
+
 ABERTA_FECHADA = (
 	(False, 'Aberta'),
 	(True, 'Fechada')
 )
+
+ESTADO_MANUTENCAO = (
+	('EXAMINAR', 'Examinar'),
+	('ANALISE', 'Em Análise'),
+	('AGUARDANDO', 'Aguardando'),
+	('ORDEM_DE_SERVICO', 'Ordem de Serviço'),
+	('CONCLUIDA', 'Concluída')
+)
+
 
 @python_2_unicode_compatible
 class Obra(models.Model):
@@ -186,8 +202,22 @@ class Obra(models.Model):
 	def __str__(self):
 		return self.nome
 
+@python_2_unicode_compatible
+class Motor(models.Model):
+	numeroSerie = models.CharField("Número de serie",max_length=200,primary_key=True)
+	modelo = models.ForeignKey("Modelo",default=None,blank=True,null=True)
 
+	criado_date = models.DateField("Data Criada", auto_now_add=True)
+	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
 
+	def __str__(self):
+		return self.nome
+
+YEAR_CHOICES = []
+for r in range(1980, (datetime.now().year+1)):
+    YEAR_CHOICES.append((r,r))
+
+default_year = YEAR_CHOICES[-2][1]
 
 @python_2_unicode_compatible
 class Veiculo(models.Model):
@@ -195,8 +225,14 @@ class Veiculo(models.Model):
 	# 	app_label = 'equipamento'
 
 	placa = models.CharField(verbose_name="Placa/Codigo Interno",max_length=30,primary_key=True)
-	
 	tipo = models.CharField(max_length=13, choices=TIPO_VEICULOS,blank=True, null=True)
+
+	#descricao
+	motor = models.ForeignKey("Motor",default=None,blank=True,null=True)
+	modelo = models.ForeignKey("Modelo",default=None,blank=True,null=True)
+	ano = models.IntegerField(_('year'), choices=YEAR_CHOICES, default=default_year,blank=True,null=True)
+	chassi = models.CharField(verbose_name="Chassi",max_length=30,blank=True,null=True)	
+
 	isVeiculo = models.BooleanField(choices=MAQUINA_VEICULO,default=True,blank=False, null=False,verbose_name="Veiculo/Maquina ")
 	observacao = models.TextField( blank=True, null=True)
 	favorito = models.BooleanField(verbose_name="Favorito no grafico",default=False)
@@ -232,6 +268,7 @@ class ManutencaoVeiculo(models.Model):
 
 	unidade = models.CharField(max_length=3, choices=UNIDADE_VEICULO,blank=True, null=True)
 	manutencaoRealizada = models.BooleanField('Manutencao Realizada',choices=SIM_NAO,default=False,blank=False, null=False)
+	acao = models.BooleanField('Ação',choices=ACAO,default=False,blank=False, null=False)
 	
 
 	criado_date = models.DateField("Data Criada",default=datetime.now, blank=True)
@@ -243,18 +280,22 @@ class ManutencaoVeiculo(models.Model):
 	def precisaManutencao(self):
 		return SIM_NAO[self.periodoPadrao <= self.valorAcumulado][1]
 
+
+
 @python_2_unicode_compatible
 class ManutencaoRealizada(models.Model):
 
 	manutencaoVeiculo = models.ForeignKey(ManutencaoVeiculo)
 	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
-
 	executado = models.BooleanField('Executado',choices=SIM_NAO,default=False,blank=False, null=False)
 
-	criado_date = models.DateField("Data Criada",default=datetime.now, blank=True)
+	estadoManutencao = models.BooleanField('Estado Manutencao',choices=ESTADO_MANUTENCAO,default='EXAMINAR',blank=False, null=False)
 
+	criado_date = models.DateField("Data Criada",default=datetime.now, blank=True)
 	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
+
+	ordemServico = models.ForeignKey('OrdemServico',default=None,blank=True,null=True)
 	def __str__(self):
 		return str(self.manutencaoVeiculo)+" "+str(self.veiculo)
 
@@ -262,6 +303,7 @@ class ManutencaoRealizada(models.Model):
 @python_2_unicode_compatible
 class ManutencaoCorretivaRealizada(models.Model):
 	itemManutencao = models.ForeignKey(ItemManutencao)
+	quantidade = models.IntegerField('Quantidade de itens',default=0)
 	descricao = models.CharField(max_length=200)
 	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
@@ -271,28 +313,26 @@ class ManutencaoCorretivaRealizada(models.Model):
 	criado_date = models.DateField("Data Criada",default=datetime.now, blank=True)
 
 	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
+	ordemServico = models.ForeignKey('OrdemServico',default=None,blank=True,null=True)
 	def __str__(self):
-		return str(self.manutencaoVeiculo)+" "+str(self.veiculo)
-
+		return str(self.itemManutencao)+" "+str(self.veiculo)
 
 @python_2_unicode_compatible
 class OrdemServico(models.Model):
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
-	responsavel = models.ForeignKey(User,verbose_name="Responsável pelo abastecimento")
-	materiais = models.ManyToManyField(ItemManutencao,null=True,blank=True)
+	responsavel = models.ForeignKey(User,verbose_name="Responsável")
 
-	manutencaoRealizadas = models.ManyToManyField(ManutencaoRealizada,null=True,blank=True)
-	manutencaoCorretivaRealizadas = models.ManyToManyField(ManutencaoCorretivaRealizada,null=True,blank=True)
+	manutencaoRealizadas = models.ManyToManyField(ManutencaoRealizada,verbose_name="Manutencao Programada",limit_choices_to={'ordemServico__isnull': True},blank=True)
+	manutencaoCorretivaRealizadas = models.ManyToManyField(ManutencaoCorretivaRealizada,verbose_name="Manutencao Corretiva",limit_choices_to={'ordemServico__isnull': True},blank=True)
+	# materiais = models.ManyToManyField(ItemManutencao,verbose_name="Materiais extras usados",blank=True)
 	observacao = models.TextField( blank=True, null=True)
 
-	fechada = models.BooleanField('Executado',choices=ABERTA_FECHADA,default=False,blank=False, null=False)
+	fechada = models.BooleanField('Fechada',choices=ABERTA_FECHADA,default=False,blank=False, null=False)
 
 	criado_date = models.DateField("Data Criada",default=datetime.now, blank=True)
-
 	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
 	def __str__(self):
-		return str(self.manutencaoVeiculo)+" "+str(self.veiculo)
-
+		return str(self.id)+" "+str(self.fechada)+" "+str(self.veiculo)
 
 DIRETO_INDIRETO = (
 	('DIRETO', 'DIRETO'),
@@ -302,16 +342,18 @@ DIRETO_INDIRETO = (
 @python_2_unicode_compatible
 class Custo(models.Model):
 
-	ItemManutencao = models.ForeignKey(ItemManutencao, blank=True, null=True)
-	valor = models.FloatField('Valor',default=0)
+	notafiscal = models.CharField(max_length=20,blank=True, null=True)
 	criado_date = models.DateField("Data Criada",default=datetime.now, blank=True)
+	fornecedor = models.ForeignKey(Fornecedor, blank=True, null=True)
 	diretoOrIndireto = models.CharField('tipo de custo',max_length=10,default='INDIRETO', choices=DIRETO_INDIRETO)
-	
-	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [])
+	ordemServico = models.ForeignKey('OrdemServico',default=None,blank=True,null=True)
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento",default=None, blank=True, null=True)
+	valor = models.FloatField('Valor',default=0)
+	
 	atualizado_date = models.DateTimeField("Data Atualizado", blank=True, null=True,auto_now=True)
+	
 	def __str__(self):
-		return str(self.ItemManutencao)+" "+str(self.veiculo)
+		return str(self.notafiscal)+" "+str(self.veiculo)
 
 
 TIPOS_COMBUSTIVEL = (
@@ -364,15 +406,10 @@ class Abastecimento(models.Model):
 		# so we can just do this:
 		return self.responsavel.username
 
-
-
-
-
-
 @python_2_unicode_compatible
 class Locacao(models.Model):
 
-	obra = models.ForeignKey(Obra,verbose_name="Obra envolvida no abastecimento",null=True)
+	obra = models.ForeignKey(Obra,verbose_name="Obra envolvida",null=True)
 	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
 	hodometroInicial = models.IntegerField('Hodômetro/Horimetro Inicial',default=0,validators= [validate_hodometro_and_veiculo_type])
 	hodometroFinal = models.IntegerField('Hodômetro/Horimetro Final',default=0,validators= [validate_hodometro_and_veiculo_type])
@@ -399,6 +436,45 @@ class Locacao(models.Model):
 
 	def __str__(self):	
 		return str(self.id)
+
+
+@python_2_unicode_compatible
+class Locacao_desconto(models.Model):
+	
+	locacaoCobranca = models.ForeignKey('Locacao_cobranca',default=None,blank=True,null=True)
+	valor = models.FloatField('Valor da hora do veiculo',help_text="valor em reais")
+	observacao = models.TextField( blank=True, null=True)
+	
+	criado_date = models.DateField("Data Criada",
+	        auto_now_add=True,editable=True)
+	atualizado_date = models.DateTimeField("Data Atualizado",
+	        blank=True, null=True,auto_now=True)
+
+	def __str__(self):	
+		return str(self.id)+" $"+str(valor)+" "+str(observacao)
+
+
+@python_2_unicode_compatible
+class Locacao_cobranca(models.Model):
+	obra = models.ForeignKey(Obra,verbose_name="Obra envolvida",null=True)
+	veiculo = models.ForeignKey(Veiculo,verbose_name="Veiculo/Equipamento")
+	responsavel = models.ForeignKey(User,verbose_name="Responsável")
+	
+	hodometro = models.IntegerField('Hodômetro/Horimetro',default=0,validators= [validate_hodometro_and_veiculo_type])
+
+	locacaoDescontos = models.ManyToManyField(Locacao_desconto,verbose_name="Manutencao Corretiva",limit_choices_to={'ordemServico__isnull': True},blank=True)
+	data_inicio = models.DateField("Data Inicio")
+	data_fim = models.DateField("Data Fim")
+
+	criado_date = models.DateField("Data Criada",
+	        auto_now_add=True,editable=True)
+
+	atualizado_date = models.DateTimeField("Data Atualizado",
+	        blank=True, null=True,auto_now=True)
+
+	def __str__(self):	
+		return str(self.id)
+
 
 
 

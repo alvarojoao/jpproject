@@ -36,6 +36,7 @@ from django.contrib.auth.decorators import login_required
 admin.autodiscover()
 from django import template
 
+
 class LocacaoForm(ModelForm):
     readonly = ('hodometroInicial',)
     hodometroInicial =  forms.CharField(widget=forms.TextInput(attrs={'readonly':'True'}))
@@ -43,6 +44,11 @@ class LocacaoForm(ModelForm):
     data_fim =  forms.DateField(input_formats=['%d/%m/%Y'],widget=forms.DateInput(attrs={'readonly':'True'},format='%d/%m/%Y'))
     class Media:
         js = ['/static/js/action_change.js']
+    def __init__(self, *args, **kwargs):
+        super(LocacaoForm, self).__init__(*args, **kwargs)
+        if kwargs.get('instance',None) and kwargs.get('instance',None).pk:
+            self.fields['veiculo'].disabled = True
+            self.fields['obra'].disabled = True
 
     class Meta:
         model = Locacao
@@ -111,18 +117,19 @@ def load_locacao(request,id):
     else:
         locacao = Locacao()
     form = LocacaoForm(request.POST or None, instance=locacao)
+    form.readonly = form.readonly + ('veiculo',)
     return HttpResponse(form.as_p())
 
 def get_admin_urls(urls):
     def get_urls():
-        my_urls = patterns('',
-            (r'^abastecimento/balanco/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(balanco)),
-            (r'^abastecimento/abastecimento_grafico/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(abastecimento_grafico)),
-            (r'^locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(locacao)),
-            (r'^locacao/save_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(save_locacao)),
-            (r'^locacao/delete_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(delete_locacao)),
-            (r'^locacao/load_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(load_locacao))
-        )
+        my_urls = [ 
+            url(r'^abastecimento/balanco/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(balanco)),
+            url(r'^abastecimento/abastecimento_grafico/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(abastecimento_grafico)),
+            url(r'^locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(locacao)),
+            url(r'^locacao/save_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(save_locacao)),
+            url(r'^locacao/delete_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(delete_locacao)),
+            url(r'^locacao/load_locacao/(?:(?P<id>[0-9]+))?$', admin.site.admin_view(load_locacao))
+        ]
         return my_urls + urls
     return get_urls
 
@@ -132,6 +139,7 @@ admin.site.get_urls = admin_urls
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+
     # url(r'^calendar/', include('calendarium.urls')),
     url(r'^customgraph/', home),
     url(r'^balancotable/', balancotable),
